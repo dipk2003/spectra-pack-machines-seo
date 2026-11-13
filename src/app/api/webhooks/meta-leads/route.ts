@@ -14,7 +14,7 @@ function fieldMap(input: unknown) {
   const fields = new Map<string, string>();
   if (!Array.isArray(input)) return fields;
   for (const raw of input as MetaField[]) {
-    const name = text(raw?.name, 100).toLowerCase();
+    const name = text(raw?.name, 100).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
     const value = Array.isArray(raw?.values) ? text(raw.values[0], 1000) : '';
     if (name && value) fields.set(name, value);
   }
@@ -91,18 +91,22 @@ export async function POST(req: NextRequest) {
         const lead = await fetchMetaLead(leadgenId, accessToken, version);
         const fields = fieldMap(lead.field_data);
         const name = fields.get('full_name') || [fields.get('first_name'), fields.get('last_name')].filter(Boolean).join(' ');
-        const email = fields.get('email') || '';
+        const email = fields.get('email') || fields.get('email_address') || '';
         const phone = fields.get('phone_number') || fields.get('phone') || '';
         if (!name || (!email && !phone)) throw new Error('Meta lead did not include a name and contact method.');
         const adId = text(lead.ad_id, 100);
         const campaign = adId ? await fetchMetaAdCampaign(adId, accessToken, version) : { id: '', name: '' };
-        const excluded = new Set(['full_name', 'first_name', 'last_name', 'email', 'phone', 'phone_number', 'company_name', 'company', 'machine_interest']);
+        const productDetails = Array.from(fields.entries())
+          .filter(([key]) => /(product|machine|interest)/.test(key) && !['interest_level', 'machine_interest'].includes(key))
+          .map(([key, fieldValue]) => `${key.replace(/_/g, ' ')}: ${fieldValue}`);
+        const machineInterest = fields.get('machine_interest') || productDetails.join('; ').slice(0, 300);
+        const excluded = new Set(['full_name', 'first_name', 'last_name', 'email', 'email_address', 'phone', 'phone_number', 'company_name', 'company', 'machine_interest']);
         const extra = Array.from(fields.entries()).filter(([key]) => !excluded.has(key)).map(([key, fieldValue]) => `${key.replace(/_/g, ' ')}: ${fieldValue}`);
         const { error } = await db.rpc('crm_ingest_external_lead', {
           p_provider: 'meta-ads', p_external_id: leadgenId,
           p_lead: {
             name, email, phone, company: fields.get('company_name') || fields.get('company') || '',
-            machineInterest: fields.get('machine_interest') || '',
+            machineInterest,
             campaignId: campaign.id, formId: text(lead.form_id, 160),
             message: [`Meta lead form ${text(lead.form_id, 100)}; campaign ${campaign.name || campaign.id || 'unresolved'}; ad ${adId || 'unresolved'}.`, ...extra].join('\n').slice(0, 4000),
           },

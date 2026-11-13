@@ -91,7 +91,8 @@ body {
 
 main {
   width: 100%;
-  overflow-x: hidden;
+  /* Clip sideways motion without creating a scroll container for sticky scenes. */
+  overflow-x: clip;
 }
 
 a {

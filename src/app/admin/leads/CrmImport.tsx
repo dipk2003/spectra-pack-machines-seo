@@ -33,7 +33,16 @@ export default function CrmImport({ onImported }: { onImported: () => void }) {
     try {
       if (file.size > 5_000_000) throw new Error('Choose a file smaller than 5 MB.');
       let nextSheets: typeof sheets;
-      if (/\.csv$/i.test(file.name)) nextSheets = [{ name: 'CSV', rows: parseImportCsv(await file.text()) }];
+      if (/\.csv$/i.test(file.name)) {
+        const bytes = await file.arrayBuffer();
+        const signature = new Uint8Array(bytes, 0, Math.min(2, bytes.byteLength));
+        const encoding = signature[0] === 0xff && signature[1] === 0xfe
+          ? 'utf-16le'
+          : signature[0] === 0xfe && signature[1] === 0xff
+            ? 'utf-16be'
+            : 'utf-8';
+        nextSheets = [{ name: 'CSV', rows: parseImportCsv(new TextDecoder(encoding).decode(bytes)) }];
+      }
       else if (/\.xlsx$/i.test(file.name)) {
         const ExcelJS = await import('exceljs');
         const workbook = new ExcelJS.Workbook();

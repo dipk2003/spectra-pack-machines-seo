@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, type ReactNode } from 'react';
-import { motion, useInView, Variant } from 'framer-motion';
+import { motion, useInView, useReducedMotion, useScroll, useTransform, Variant } from 'framer-motion';
 
 interface Props {
   children: ReactNode;
@@ -9,6 +9,7 @@ interface Props {
   delay?: number;
   direction?: 'up' | 'down' | 'left' | 'right' | 'none';
   initialVisible?: boolean;
+  depth?: boolean;
 }
 
 export default function AnimatedSection({
@@ -17,15 +18,13 @@ export default function AnimatedSection({
   delay = 0,
   direction = 'up',
   initialVisible = false,
+  depth = false,
 }: Props) {
   const ref = useRef(null);
+  const reducedMotion = useReducedMotion();
   const isInView = useInView(ref, { once: true, margin: '-50px' });
-  const isSmallViewport =
-    typeof window !== 'undefined' && window.innerWidth <= 1024;
-  const resolvedDirection =
-    isSmallViewport && (direction === 'left' || direction === 'right')
-      ? 'up'
-      : direction;
+  // Vertical reveals avoid off-screen horizontal content on narrow viewports.
+  const resolvedDirection = direction === 'left' || direction === 'right' ? 'up' : direction;
 
   const dirVariants: Record<string, { hidden: Variant; visible: Variant }> = {
     up: {
@@ -54,12 +53,37 @@ export default function AnimatedSection({
 
   return (
     <div ref={ref} className={className} style={{ minWidth: 0 }}>
+      <DepthSurface enabled={depth}>
       <motion.div
-        initial={initialVisible ? 'visible' : 'hidden'}
-        animate={initialVisible || isInView ? 'visible' : 'hidden'}
+        initial={initialVisible || reducedMotion ? 'visible' : 'hidden'}
+        animate={initialVisible || reducedMotion || isInView ? 'visible' : 'hidden'}
         variants={v}
-        transition={{ duration: 0.6, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
+        transition={{ duration: reducedMotion ? 0 : 0.8, delay: reducedMotion ? 0 : delay, ease: [0.22, 1, 0.36, 1] }}
       >
+        {children}
+      </motion.div>
+      </DepthSurface>
+    </div>
+  );
+}
+
+
+function DepthSurface({ enabled, children }: { enabled: boolean; children: ReactNode }) {
+  return enabled ? <ScrollDepth>{children}</ScrollDepth> : <>{children}</>;
+}
+
+function ScrollDepth({ children }: { children: ReactNode }) {
+  const depthRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: depthRef, offset: ['start end', 'end start'] });
+  const depthY = useTransform(scrollYProgress, [0, 0.5, 1], [28, 0, -28]);
+  const depthRotate = useTransform(scrollYProgress, [0, 0.5, 1], [5, 0, -3]);
+  const depthScale = useTransform(scrollYProgress, [0, 0.4, 1], [0.96, 1, 0.98]);
+  return (
+    <div ref={depthRef} style={{ perspective: 1200 }}>
+      <motion.div style={reducedMotion ? undefined : {
+        y: depthY, rotateX: depthRotate, scale: depthScale, transformPerspective: 1200,
+      }}>
         {children}
       </motion.div>
     </div>

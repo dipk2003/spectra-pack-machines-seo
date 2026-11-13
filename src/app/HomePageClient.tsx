@@ -256,7 +256,7 @@ export default function HomePageClient({
             {categoryCards.map((category, groupIndex) => {
               const categoryHref = `/products/category/${category.slug}`;
               return (
-                <AnimatedSection key={`${category.slug}-spotlight`} delay={groupIndex * 0.04}>
+                <AnimatedSection key={`${category.slug}-spotlight`} delay={groupIndex * 0.04} depth>
                   <Link href={categoryHref} className={styles.categorySpotlightCard}>
                     <div className={styles.categorySpotlightVisual}>
                       <div className={styles.categorySpotlightGlow} />
@@ -385,7 +385,7 @@ export default function HomePageClient({
               </Link>
             </AnimatedSection>
 
-            <AnimatedSection direction="right" className={styles.aboutVisual}>
+            <AnimatedSection direction="right" className={styles.aboutVisual} depth>
               <div className={styles.aboutCard}>
                 <div className={styles.aboutCardInner}>
                   <div className={styles.aboutStatGrid}>

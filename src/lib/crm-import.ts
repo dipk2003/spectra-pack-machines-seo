@@ -6,11 +6,11 @@ export type ImportLead = Record<ImportField, string>;
 export function suggestImportField(header: string): ImportField | '' {
   const normalized = header.toLowerCase().replace(/[^a-z0-9]/g, '');
   const aliases: Record<ImportField, string[]> = {
-    name: ['name', 'customername', 'fullname', 'contactname', 'leadname'],
+    name: ['name', 'customername', 'fullname', 'firstname', 'contactname', 'leadname'],
     phone: ['phone', 'phonenumber', 'mobile', 'mobilenumber', 'contactnumber', 'telephone'],
     email: ['email', 'emailaddress', 'emailid'],
     company: ['company', 'companyname', 'business', 'businessname'],
-    machineInterest: ['machine', 'machineinterest', 'product', 'productinterest', 'requirement'],
+    machineInterest: ['machine', 'machineinterest', 'product', 'productinterest', 'requirement', 'whatproductdoyouwanttoshrinkwrap', 'whatproductdoyoupack'],
     message: ['message', 'notes', 'description', 'remarks'],
   };
   return IMPORT_FIELDS.find(field => aliases[field].includes(normalized)) || '';
@@ -36,12 +36,27 @@ export function validateImportLead(lead: ImportLead): string {
 export function parseImportCsv(text: string): string[][] {
   const rows: string[][] = []; let row: string[] = []; let cell = ''; let quoted = false;
   text = text.replace(/^\uFEFF/, '');
+  let commas = 0;
+  let tabs = 0;
+  let semicolons = 0;
+  let inHeaderQuote = false;
+  for (let index = 0; index < text.length; index++) {
+    const character = text[index];
+    if (character === '"') {
+      if (inHeaderQuote && text[index + 1] === '"') index++;
+      else inHeaderQuote = !inHeaderQuote;
+    } else if (!inHeaderQuote && (character === '\n' || character === '\r')) break;
+    else if (!inHeaderQuote && character === ',') commas++;
+    else if (!inHeaderQuote && character === '\t') tabs++;
+    else if (!inHeaderQuote && character === ';') semicolons++;
+  }
+  const delimiter = tabs > commas && tabs > semicolons ? '\t' : semicolons > commas ? ';' : ',';
   for (let index = 0; index < text.length; index++) {
     const character = text[index];
     if (character === '"') {
       if (quoted && text[index + 1] === '"') { cell += '"'; index++; }
       else quoted = !quoted;
-    } else if (character === ',' && !quoted) { row.push(cell); cell = ''; }
+    } else if (character === delimiter && !quoted) { row.push(cell); cell = ''; }
     else if ((character === '\n' || character === '\r') && !quoted) {
       if (character === '\r' && text[index + 1] === '\n') index++;
       rows.push([...row, cell]); row = []; cell = '';

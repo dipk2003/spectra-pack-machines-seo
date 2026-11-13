@@ -14,12 +14,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import styles from './CategoryHeroCarousel.module.css';
+import MachineWorkingVisual from './MachineWorkingVisual';
+import { getMachineOperationPreset } from './machine-operation-presets';
+import operationStyles from './MachineWorkingVisual.module.css';
 
 interface CategoryHeroCarouselProps {
   slides: HeroCarouselSlide[];
 }
 
-const AUTO_SLIDE_DELAY_MS = 5500;
+const AUTO_SLIDE_DELAY_MS = 12000;
 
 const APPLICATION_COMPOSITE_SLIDE_IDS = new Set([
   'custom-1782659629659-jzihz1',
@@ -56,7 +59,7 @@ const HERO_IMAGE_SIGNATURES: Partial<Record<string, readonly string[]>> = {
   'sealing-machines': ['988b2087ff0a6477.png'],
   'pneumatic-impulse-sealing': ['a1fefbfbb0a89c52.png'],
   conveyors: ['cf74bcc711e3cf37.png'],
-  'semi-automatic-web-sealer-with-shrink-tunnel': ['db9f9891b36ade32.png'],
+  'semi-automatic-web-sealer-with-shrink-tunnel': ['db9f9891b36ade32.png', 'semi-automatic-web-sealer-with-shrink-tunnel-bottles.png'],
   'automatic-carton-taping-with-box-strapping': ['d07d89627cbb0f17.png'],
   'l-sealer-with-shrink-tunnel': ['bf64a0358f09f0e6.png'],
   'vacuum-packaging-machines': [
@@ -742,6 +745,7 @@ export default function CategoryHeroCarousel({
                 supportsVisualPreset &&
                 APPLICATION_COMPOSITE_SLIDE_IDS.has(slide.id);
               const machineImageSrc = assetPreset?.foreground ?? slide.image;
+              const operation = getMachineOperationPreset(machineImageSrc);
               const backdropImageSrc =
                 assetPreset?.backdrop ?? assetPreset?.foreground ?? slide.image;
               const usesTransparentCutout =
@@ -855,6 +859,14 @@ export default function CategoryHeroCarousel({
                                   : ''
                               }`}
                             >
+                              {operation ? (
+                                <MachineWorkingVisual
+                                  source={machineImageSrc}
+                                  alt={slide.imageAlt}
+                                  preset={operation}
+                                  paused={isUserPaused}
+                                />
+                              ) : (
                               <Image
                                 src={machineImageSrc}
                                 alt={slide.imageAlt}
@@ -867,6 +879,7 @@ export default function CategoryHeroCarousel({
                                 )}
                                 className={machineImageClassName}
                               />
+                              )}
                             </div>
                           </div>
                         ) : (
@@ -876,49 +889,7 @@ export default function CategoryHeroCarousel({
                         )
                       ) : null}
 
-                      {isActive && samplePreset ? (
-                        <div className={styles.runningLine} aria-hidden="true">
-                          <div className={styles.runningBelt}>
-                            <span className={styles.beltTick} />
-                            <span className={styles.beltTick} />
-                            <span className={styles.beltTick} />
-                            <span className={styles.beltTick} />
-                          </div>
-                          <div className={styles.runningFlow}>
-                            <span className={styles.runningItem} data-flow-order="0">
-                              <img
-                                src={samplePreset.src}
-                                alt=""
-                                loading="lazy"
-                                decoding="async"
-                                className={styles.runningItemImage}
-                              />
-                            </span>
-                            <span className={styles.runningItem} data-flow-order="1">
-                              <img
-                                src={samplePreset.src}
-                                alt=""
-                                loading="lazy"
-                                decoding="async"
-                                className={styles.runningItemImage}
-                              />
-                            </span>
-                            <span className={styles.runningItem} data-flow-order="2">
-                              <img
-                                src={samplePreset.src}
-                                alt=""
-                                loading="lazy"
-                                decoding="async"
-                                className={styles.runningItemImage}
-                              />
-                            </span>
-                          </div>
-                          <span className={styles.processFlash} />
-                          <span className={styles.processFlash} data-flash-delay="1" />
-                        </div>
-                      ) : null}
-
-                      {isActive && samplePreset ? (
+                      {isActive && samplePreset && !operation ? (
                         <div className={styles.sampleProduct}>
                           <span className={styles.sampleProductLabel}>
                             {samplePreset.alt}
@@ -936,7 +907,19 @@ export default function CategoryHeroCarousel({
                         </div>
                       ) : null}
                     </div>
-
+                    {operation ? (
+                      <div className={operationStyles.operationPanel} data-working-preview="">
+                        <div className={operationStyles.operationTitle}>
+                          <strong>Machine in motion</strong>
+                          <span>Original machine visual</span>
+                        </div>
+                        <ol className={operationStyles.steps}>
+                          {operation.steps.map((step, stepIndex) => (
+                            <li key={step}><span>0{stepIndex + 1}</span>{step}</li>
+                          ))}
+                        </ol>
+                      </div>
+                    ) : null}
                   </div>
                 </article>
               );
@@ -974,8 +957,8 @@ export default function CategoryHeroCarousel({
               onClick={() => setIsUserPaused((current) => !current)}
               aria-label={
                 isUserPaused
-                  ? 'Play automatic hero carousel'
-                  : 'Pause automatic hero carousel'
+                  ? 'Play machine animation and carousel'
+                  : 'Pause machine animation and carousel'
               }
               aria-pressed={isUserPaused}
             >
