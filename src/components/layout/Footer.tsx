@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getCatalogPath, listProducts } from '@/lib/cms';
 import { COMPANY_INFO, PRODUCTS, groupProductsByCategory } from '@/lib/data';
+import { withTimeout } from '@/lib/async-timeout';
 import { MapPin, Phone, Mail, Facebook, Instagram, Linkedin, Youtube, Twitter } from 'lucide-react';
 import ConsentPreferencesButton from '@/components/analytics/ConsentPreferencesButton';
 import styles from './Footer.module.css';
@@ -11,10 +12,14 @@ export default async function Footer() {
   let catalogPath = COMPANY_INFO.catalogPath;
 
   try {
-    const [resolvedProducts, resolvedCatalogPath] = await Promise.all([
-      listProducts({ publishedOnly: true }),
-      getCatalogPath(),
-    ]);
+    const [resolvedProducts, resolvedCatalogPath] = await withTimeout(
+      Promise.all([
+        listProducts({ publishedOnly: true }),
+        getCatalogPath(),
+      ]),
+      8000,
+      'Footer CMS data',
+    );
 
     if (resolvedProducts.length > 0) {
       products = resolvedProducts;

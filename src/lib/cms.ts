@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { revalidateTag, unstable_cache } from 'next/cache';
 import { categoryToSlug, getCategoryShowcase } from './categories';
 import {
   COMPANY_INFO,
@@ -1032,7 +1033,7 @@ export function normalizeSiteSettingInput(input: Record<string, unknown>) {
   };
 }
 
-export async function listProducts(options?: ReadQueryOptions) {
+async function loadProducts(options?: ReadQueryOptions) {
   const supabase = getSupabaseReadClient(options?.access);
 
   if (!supabase) {
@@ -1082,7 +1083,21 @@ export async function listProducts(options?: ReadQueryOptions) {
   return Array.from(canonicalProducts.values(), ({ product }) => product);
 }
 
-export async function getProductBySlug(
+const cachedPublicProducts = unstable_cache(
+  () => loadProducts({ publishedOnly: true, access: 'public' }),
+  ['cms-public-products-v1'],
+  { revalidate: 1800, tags: ['cms-public-products'] },
+);
+
+export async function listProducts(options?: ReadQueryOptions) {
+  if (options?.publishedOnly && options.access !== 'admin') {
+    return cachedPublicProducts();
+  }
+
+  return loadProducts(options);
+}
+
+async function loadProductBySlug(
   slug: string,
   options?: ReadQueryOptions,
 ) {
@@ -1126,6 +1141,20 @@ export async function getProductBySlug(
   return match ? mapProductRow(match) : null;
 }
 
+const cachedPublicProductBySlug = unstable_cache(
+  (slug: string) => loadProductBySlug(slug, { publishedOnly: true, access: 'public' }),
+  ['cms-public-product-by-slug-v1'],
+  { revalidate: 1800, tags: ['cms-public-products'] },
+);
+
+export async function getProductBySlug(slug: string, options?: ReadQueryOptions) {
+  if (options?.publishedOnly && options.access !== 'admin') {
+    return cachedPublicProductBySlug(slug);
+  }
+
+  return loadProductBySlug(slug, options);
+}
+
 export async function getProductById(id: string, options?: { access?: ReadAccess }) {
   const supabase = getSupabaseReadClient(options?.access);
 
@@ -1160,6 +1189,7 @@ export async function createProduct(input: Record<string, unknown>) {
     .single();
 
   if (error) throw error;
+  revalidateTag('cms-public-products');
   return mapProductRow(data as ProductRow);
 }
 
@@ -1174,6 +1204,7 @@ export async function updateProduct(id: string, input: Record<string, unknown>) 
     .single();
 
   if (error) throw error;
+  revalidateTag('cms-public-products');
   return mapProductRow(data as ProductRow);
 }
 
@@ -1181,9 +1212,10 @@ export async function deleteProduct(id: string) {
   const supabase = getSupabaseAdmin();
   const { error } = await supabase.from('products').delete().eq('id', id);
   if (error) throw error;
+  revalidateTag('cms-public-products');
 }
 
-export async function listBlogs(options?: ReadQueryOptions) {
+async function loadBlogs(options?: ReadQueryOptions) {
   const supabase = getSupabaseReadClient(options?.access);
 
   if (!supabase) {
@@ -1209,7 +1241,21 @@ export async function listBlogs(options?: ReadQueryOptions) {
   return (data as BlogRow[]).map(mapBlogRow);
 }
 
-export async function getBlogBySlug(
+const cachedPublicBlogs = unstable_cache(
+  () => loadBlogs({ publishedOnly: true, access: 'public' }),
+  ['cms-public-blogs-v1'],
+  { revalidate: 1800, tags: ['cms-public-blogs'] },
+);
+
+export async function listBlogs(options?: ReadQueryOptions) {
+  if (options?.publishedOnly && options.access !== 'admin') {
+    return cachedPublicBlogs();
+  }
+
+  return loadBlogs(options);
+}
+
+async function loadBlogBySlug(
   slug: string,
   options?: ReadQueryOptions,
 ) {
@@ -1233,6 +1279,20 @@ export async function getBlogBySlug(
     throw error;
   }
   return data ? mapBlogRow(data as BlogRow) : null;
+}
+
+const cachedPublicBlogBySlug = unstable_cache(
+  (slug: string) => loadBlogBySlug(slug, { publishedOnly: true, access: 'public' }),
+  ['cms-public-blog-by-slug-v1'],
+  { revalidate: 1800, tags: ['cms-public-blogs'] },
+);
+
+export async function getBlogBySlug(slug: string, options?: ReadQueryOptions) {
+  if (options?.publishedOnly && options.access !== 'admin') {
+    return cachedPublicBlogBySlug(slug);
+  }
+
+  return loadBlogBySlug(slug, options);
 }
 
 export async function getBlogById(id: string, options?: { access?: ReadAccess }) {
@@ -1267,6 +1327,7 @@ export async function createBlog(input: Record<string, unknown>) {
     .single();
 
   if (error) throw error;
+  revalidateTag('cms-public-blogs');
   return mapBlogRow(data as BlogRow);
 }
 
@@ -1281,6 +1342,7 @@ export async function updateBlog(id: string, input: Record<string, unknown>) {
     .single();
 
   if (error) throw error;
+  revalidateTag('cms-public-blogs');
   return mapBlogRow(data as BlogRow);
 }
 
@@ -1288,9 +1350,10 @@ export async function deleteBlog(id: string) {
   const supabase = getSupabaseAdmin();
   const { error } = await supabase.from('blogs').delete().eq('id', id);
   if (error) throw error;
+  revalidateTag('cms-public-blogs');
 }
 
-export async function listCategories(options?: ReadQueryOptions) {
+async function loadCategories(options?: ReadQueryOptions) {
   const supabase = getSupabaseReadClient(options?.access);
 
   if (!supabase) {
@@ -1323,6 +1386,20 @@ export async function listCategories(options?: ReadQueryOptions) {
   return (data as CategoryRow[]).map(mapCategoryRow);
 }
 
+const cachedPublicCategories = unstable_cache(
+  () => loadCategories({ publishedOnly: true, access: 'public' }),
+  ['cms-public-categories-v1'],
+  { revalidate: 1800, tags: ['cms-public-categories'] },
+);
+
+export async function listCategories(options?: ReadQueryOptions) {
+  if (options?.publishedOnly && options.access !== 'admin') {
+    return cachedPublicCategories();
+  }
+
+  return loadCategories(options);
+}
+
 export async function getCategoryBySlugRecord(
   slug: string,
   options?: ReadQueryOptions,
@@ -1346,6 +1423,8 @@ export async function createCategory(input: Record<string, unknown>) {
     .single();
 
   if (error) throw error;
+  revalidateTag('cms-public-categories');
+  revalidateTag('cms-public-products');
   return mapCategoryRow(data as CategoryRow);
 }
 
@@ -1369,6 +1448,8 @@ export async function updateCategory(id: string, input: Record<string, unknown>)
 
   if (syncProducts.error) throw syncProducts.error;
 
+  revalidateTag('cms-public-categories');
+  revalidateTag('cms-public-products');
   return mappedCategory;
 }
 
@@ -1380,6 +1461,8 @@ export async function deleteCategory(id: string) {
     .eq('id', id);
 
   if (error) throw error;
+  revalidateTag('cms-public-categories');
+  revalidateTag('cms-public-products');
 }
 
 export async function listLeads() {
@@ -1596,7 +1679,7 @@ export async function updateMeeting(id: string, input: Record<string, unknown>) 
   return mapMeetingRow(data as MeetingRow);
 }
 
-export async function listServices(options?: ReadQueryOptions) {
+async function loadServices(options?: ReadQueryOptions) {
   const supabase = getSupabaseReadClient(options?.access);
 
   if (!supabase) {
@@ -1629,6 +1712,20 @@ export async function listServices(options?: ReadQueryOptions) {
   return (data as ServiceRow[]).map(mapServiceRow);
 }
 
+const cachedPublicServices = unstable_cache(
+  () => loadServices({ publishedOnly: true, access: 'public' }),
+  ['cms-public-services-v1'],
+  { revalidate: 1800, tags: ['cms-public-services'] },
+);
+
+export async function listServices(options?: ReadQueryOptions) {
+  if (options?.publishedOnly && options.access !== 'admin') {
+    return cachedPublicServices();
+  }
+
+  return loadServices(options);
+}
+
 export async function listSiteSettings(options?: { access?: ReadAccess }) {
   const supabase = getSupabaseReadClient(options?.access);
 
@@ -1650,7 +1747,7 @@ export async function listSiteSettings(options?: { access?: ReadAccess }) {
   return (data as SiteSettingRow[]).map(mapSiteSettingRow);
 }
 
-export async function getSiteSetting(key: string, options?: { access?: ReadAccess }) {
+async function loadSiteSetting(key: string, options?: { access?: ReadAccess }) {
   const normalizedKey = settingKeyify(key);
   const supabase = getSupabaseReadClient(options?.access);
 
@@ -1673,6 +1770,20 @@ export async function getSiteSetting(key: string, options?: { access?: ReadAcces
   return data ? mapSiteSettingRow(data as SiteSettingRow) : null;
 }
 
+const cachedPublicSiteSetting = unstable_cache(
+  (key: string) => loadSiteSetting(key, { access: 'public' }),
+  ['cms-public-site-setting-v1'],
+  { revalidate: 1800, tags: ['cms-public-site-settings'] },
+);
+
+export async function getSiteSetting(key: string, options?: { access?: ReadAccess }) {
+  if (options?.access !== 'admin') {
+    return cachedPublicSiteSetting(settingKeyify(key));
+  }
+
+  return loadSiteSetting(key, options);
+}
+
 export async function upsertSiteSetting(input: Record<string, unknown>) {
   const supabase = getSupabaseAdmin();
   const payload = normalizeSiteSettingInput(input);
@@ -1683,6 +1794,7 @@ export async function upsertSiteSetting(input: Record<string, unknown>) {
     .single();
 
   if (error) throw error;
+  revalidateTag('cms-public-site-settings');
   return mapSiteSettingRow(data as SiteSettingRow);
 }
 

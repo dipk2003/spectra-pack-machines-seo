@@ -82,7 +82,9 @@ const nextConfig = {
   images: {
     domains: ['images.unsplash.com', 'via.placeholder.com'],
     remotePatterns,
-    minimumCacheTTL: 86400,
+    // Reuse optimized Supabase images for a month so repeat page views do not
+    // re-fetch the same source image from Storage every day.
+    minimumCacheTTL: 2592000,
   },
   webpack: (config, { dev }) => {
     // OneDrive-backed workspaces on Windows can corrupt webpack's filesystem cache.

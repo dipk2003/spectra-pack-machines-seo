@@ -7,9 +7,9 @@ type SupabaseEnv = {
 };
 
 export const SUPABASE_ADMIN_CONFIG_MESSAGE =
-  'Supabase admin access is not configured. Add a real SUPABASE_SERVICE_ROLE_KEY so admin can load leads, meetings, and manage database content.';
+  'Supabase admin access is not configured. Add a server-only SUPABASE_SECRET_KEY so admin can load leads, meetings, and manage database content.';
 export const SUPABASE_AUTH_CONFIG_MESSAGE =
-  'Supabase auth is not configured. Add NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY, and SUPABASE_SERVICE_ROLE_KEY so admin login can use Supabase Auth.';
+  'Supabase auth is not configured. Add NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, and a server-only SUPABASE_SECRET_KEY so admin login can use Supabase Auth.';
 
 const hasPlaceholderValue = (value: string) =>
   !value ||
@@ -25,14 +25,14 @@ let supabasePublicClientConfig = '';
 const getSupabaseEnv = (): SupabaseEnv => ({
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '',
   supabasePublicKey:
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
     '',
   supabaseServiceRoleKey:
+    process.env.SUPABASE_SECRET_KEY ||
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
     process.env.SUPABASE_SERVICE_KEY ||
-    process.env.SUPABASE_SECRET_KEY ||
     process.env.SUPABASE_SERVICE_ROLE ||
     '',
 });
@@ -79,7 +79,7 @@ export function getSupabaseConnectionStatus() {
       ? 'Supabase public and admin access are configured.'
       : publicConfigured
         ? SUPABASE_ADMIN_CONFIG_MESSAGE
-        : 'Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY first.',
+        : 'Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY first.',
   } as const;
 }
 
@@ -88,7 +88,7 @@ export function getSupabasePublic() {
 
   if (!hasSupabasePublicConfig()) {
     throw new Error(
-      'Supabase public env is missing. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY.',
+      'Supabase public env is missing. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.',
     );
   }
 

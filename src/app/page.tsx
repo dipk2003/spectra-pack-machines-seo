@@ -3,7 +3,8 @@ import type { Metadata } from 'next';
 import HomePageClient from './HomePageClient';
 import { getSiteSetting, listCategories, listProducts } from '@/lib/cms';
 import { parseHeroCarouselSettings } from '@/lib/home-hero';
-import { FAQS } from '@/lib/data';
+import { FAQS, PRODUCTS } from '@/lib/data';
+import { withTimeout } from '@/lib/async-timeout';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,11 +28,15 @@ export const metadata: Metadata = completePageMetadata({
 
 const getHomePageData = async () => {
   try {
-    const [products, categories, heroSetting] = await Promise.all([
-      listProducts({ publishedOnly: true }),
-      listCategories({ publishedOnly: true }),
-      getSiteSetting('hero_carousel_overrides', { access: 'public' }),
-    ]);
+    const [products, categories, heroSetting] = await withTimeout(
+      Promise.all([
+        listProducts({ publishedOnly: true }),
+        listCategories({ publishedOnly: true }),
+        getSiteSetting('hero_carousel_overrides', { access: 'public' }),
+      ]),
+      8000,
+      'Homepage CMS data',
+    );
     const rawHeroSettings = heroSetting?.jsonValue || (() => {
       try {
         return heroSetting?.value ? JSON.parse(heroSetting.value) : {};
@@ -46,14 +51,9 @@ const getHomePageData = async () => {
       heroSettings: parseHeroCarouselSettings(rawHeroSettings),
     };
   } catch {
-    const [products, categories] = await Promise.all([
-      listProducts({ publishedOnly: true }),
-      listCategories({ publishedOnly: true }),
-    ]);
-
     return {
-      products,
-      categories,
+      products: PRODUCTS,
+      categories: [],
       heroSettings: {
         overrides: {},
         orderedIds: [],

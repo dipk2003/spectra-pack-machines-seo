@@ -12,8 +12,8 @@ import styles from './Navbar.module.css';
 
 const HAS_PUBLIC_SUPABASE_CONFIG = Boolean(
   process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
 );
 

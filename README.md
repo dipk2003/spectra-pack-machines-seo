@@ -260,12 +260,12 @@ These variables are referenced by the codebase and should be documented for depl
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `SUPABASE_SECRET_KEY` (server-only; required for admin and write operations)
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY` (legacy fallback)
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` (legacy server-only fallback)
 - `SUPABASE_SERVICE_KEY`
-- `SUPABASE_SECRET_KEY`
 - `SUPABASE_STORAGE_BUCKET`
 
 ### AI

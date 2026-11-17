@@ -16,9 +16,13 @@ export const shouldBypassNextImageOptimization = (src: string) => {
     try {
       const imageUrl = new URL(normalizedSrc);
 
-      // The public CMS bucket is allow-listed in next.config.js, so these large
-      // PNGs can use Next's sized WebP cache instead of loading at source size.
-      return imageUrl.hostname !== 'brtzazvawofpdyzahhda.supabase.co';
+      // Optimize assets from the source and replacement Supabase projects.
+      // Next's image cache can reuse sized responses and avoid repeatedly
+      // fetching full originals from Storage.
+      const isPublicSiteAsset =
+        imageUrl.hostname.endsWith('.supabase.co') &&
+        imageUrl.pathname.startsWith('/storage/v1/object/public/site-assets/');
+      return !isPublicSiteAsset;
     } catch {
       return true;
     }
