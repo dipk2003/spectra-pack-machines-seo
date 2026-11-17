@@ -113,6 +113,40 @@ export async function syncAdReports(since?: string, until?: string) {
   return results;
 }
 
+/** Change delivery state for a campaign in the single Meta account configured for this CRM. */
+export async function setMetaCampaignStatus(campaignId: string, status: 'ACTIVE' | 'PAUSED') {
+  const account = (process.env.META_AD_ACCOUNT_ID || '').replace(/^act_/, '');
+  const version = process.env.META_GRAPH_VERSION || '';
+  const token = process.env.META_ADS_ACCESS_TOKEN?.trim() || '';
+  if (!/^\d+$/.test(account) || !/^v\d+\.0$/.test(version) || !token) {
+    throw new Error('Meta Ads credentials are not configured.');
+  }
+  if (!/^\d{5,30}$/.test(campaignId)) throw new Error('Invalid Meta campaign ID.');
+
+  const db = getSupabaseAdmin();
+  const { data: campaign, error: lookupError } = await db.from('crm_ad_campaigns')
+    .select('campaign_id,status')
+    .eq('provider', 'meta').eq('account_id', account).eq('campaign_id', campaignId).maybeSingle();
+  if (lookupError) throw new Error('Could not verify this campaign belongs to the connected Meta account.');
+  if (!campaign) throw new Error('Campaign not found in the connected Meta account. Sync campaigns and try again.');
+
+  const response = await fetch(`https://graph.facebook.com/${version}/${campaignId}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ status }),
+    cache: 'no-store',
+    signal: AbortSignal.timeout(15000),
+  });
+  const result = await response.json().catch(() => ({})) as { success?: boolean };
+  if (!response.ok || result.success !== true) {
+    throw new Error(`Meta did not accept the ${status === 'PAUSED' ? 'pause' : 'resume'} request. Check token permissions and campaign access.`);
+  }
+
+  const { error: updateError } = await db.from('crm_ad_campaigns').update({ status }).eq('provider', 'meta').eq('account_id', account).eq('campaign_id', campaignId);
+  if (updateError) throw new Error('Meta accepted the change, but the saved CRM status could not be updated. Sync campaigns to refresh it.');
+  return { campaignId, status };
+}
+
 export async function readIntegrationReport(since?: string, until?: string): Promise<IntegrationReport> {
   const range = reportRange(since, until);
   const db = getSupabaseAdmin();

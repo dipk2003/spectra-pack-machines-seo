@@ -8,7 +8,7 @@ import styles from './page.module.css';
 const names: Record<string, string> = { google: 'Google Ads', meta: 'Meta Ads', 'meta-leads': 'Meta Lead Ads', whatsapp: 'WhatsApp Business API', twilio: 'Phone provider (Twilio)' };
 const setup: Record<string, string> = {
   google: 'Connect OAuth access from a Google Cloud project approved for Google Ads API access. The website AW tag alone cannot read spend.',
-  meta: 'Connect an ad account with an access token permitted to read advertising insights. A Pixel ID alone cannot read spend. Reading the account spending cap also needs ad account billing access.',
+  meta: 'Connect an ad account with an access token permitted to read advertising insights. Add ads_management to the system-user token to let CRM owners pause or resume campaigns. A Pixel ID alone cannot read spend. Reading the account spending cap also needs ad account billing access.',
   'meta-leads': 'Receive native Facebook and Instagram lead form submissions in the CRM. The Meta app must also subscribe its Page to the leadgen webhook event.',
   whatsapp: 'Use the official WhatsApp Business Platform Cloud API. New inbound messages create CRM leads; a unique existing phone match is added to that lead, and duplicate phone matches remain for staff review.',
   twilio: 'No calling service is connected. This receiver supports provider call status and optional provider-generated transcripts; it does not start calls or record audio.',
@@ -57,6 +57,7 @@ export default function IntegrationPanel() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Action failed.');
       setNotice(result.results ? result.results.map((item: { provider: string; status: string; message?: string }) => `${names[item.provider]}: ${item.status}${item.message ? ` — ${item.message}` : ''}`).join(' • ') : 'Event linked to lead.');
+      if (result.campaignId) setNotice(`Meta campaign ${result.status === 'PAUSED' ? 'paused' : 'resumed'}. Sync to confirm the latest platform status.`);
       await load();
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Connection failed.'); }
     finally { setBusy(false); }
@@ -95,7 +96,7 @@ export default function IntegrationPanel() {
       </section>
       <section className={styles.card}>
         <div className={styles.cardTitle}><div><h2>Connected ad campaigns</h2><p>Current inventory, including campaigns without delivery in the selected period.</p></div></div>
-        {!data.campaigns.length ? <p className={styles.empty}>No campaign inventory saved yet. Connect an ad account and sync reports.</p> : <div className={styles.tableWrap}><table><caption>Meta and Google Ads campaign status</caption><thead><tr><th>Campaign</th><th>Platform / account</th><th>Status</th><th>Objective / channel</th><th>Start</th><th>End</th></tr></thead><tbody>{data.campaigns.map(campaign => <tr key={`${campaign.provider}:${campaign.account_id}:${campaign.campaign_id}`}><td>{campaign.campaign_name}<small>{campaign.campaign_id}</small></td><td>{names[campaign.provider]}<small>{campaign.account_id}</small></td><td>{campaign.status.replace(/_/g, ' ').toLowerCase()}</td><td>{campaign.objective || campaign.channel || '—'}</td><td>{campaign.start_date || '—'}</td><td>{campaign.end_date || '—'}</td></tr>)}</tbody></table></div>}
+        {!data.campaigns.length ? <p className={styles.empty}>No campaign inventory saved yet. Connect an ad account and sync reports.</p> : <><p>Owners can pause or resume Meta campaigns here. Resuming a campaign may restart ad delivery and spend.</p><div className={styles.tableWrap}><table><caption>Meta and Google Ads campaign status</caption><thead><tr><th>Campaign</th><th>Platform / account</th><th>Status</th><th>Objective / channel</th><th>Start</th><th>End</th><th>Admin action</th></tr></thead><tbody>{data.campaigns.map(campaign => <tr key={`${campaign.provider}:${campaign.account_id}:${campaign.campaign_id}`}><td>{campaign.campaign_name}<small>{campaign.campaign_id}</small></td><td>{names[campaign.provider]}<small>{campaign.account_id}</small></td><td>{campaign.status.replace(/_/g, ' ').toLowerCase()}</td><td>{campaign.objective || campaign.channel || '-'}</td><td>{campaign.start_date || '-'}</td><td>{campaign.end_date || '-'}</td><td>{campaign.provider === 'meta' && campaign.status.toUpperCase() === 'ACTIVE' ? <button className="btn btn-outline" disabled={busy} onClick={() => void act({ action: 'set-meta-campaign-status', campaignId: campaign.campaign_id, status: 'PAUSED' })}>Pause</button> : campaign.provider === 'meta' && campaign.status.toUpperCase() === 'PAUSED' ? <button className="btn btn-outline" disabled={busy} onClick={() => { if (window.confirm(`Resume “${campaign.campaign_name}”? Meta may start delivering ads and spending again.`)) void act({ action: 'set-meta-campaign-status', campaignId: campaign.campaign_id, status: 'ACTIVE' }); }}>Resume</button> : '—'}</td></tr>)}</tbody></table></div></>}
       </section>
       <section className={styles.card}>
         <h2>Advertising performance</h2>

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminRequestContext } from '@/lib/admin-auth';
 import { CrmAccessError, CrmValidationError } from '@/lib/crm';
 import { crmErrorResponse, crmHeaders, crmOriginResponse, crmUnauthorizedResponse, isTrustedCrmMutation, readCrmInput } from '@/lib/crm-http';
-import { readIntegrationReport, syncAdReports } from '@/lib/crm-integrations';
+import { readIntegrationReport, setMetaCampaignStatus, syncAdReports } from '@/lib/crm-integrations';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { isCrmUuid } from '@/lib/crm-policy';
 import { enforceMappedRateLimit } from '@/lib/rate-limit';
@@ -37,6 +37,11 @@ export async function POST(req: NextRequest) {
       const { error } = await getSupabaseAdmin().rpc('crm_link_provider_event', { p_event_id: input.eventId, p_lead_id: input.leadId, p_actor_id: viewer.userId, p_actor_name: viewer.displayName });
       if (error) throw new CrmValidationError('Could not link this event. Check that it is unmatched and the lead exists.');
       return NextResponse.json({ linked: true }, { headers: crmHeaders() });
+    }
+    if (input.action === 'set-meta-campaign-status') {
+      if (typeof input.campaignId !== 'string' || !/^\d{5,30}$/.test(input.campaignId)) throw new CrmValidationError('Choose a valid Meta campaign.');
+      if (input.status !== 'ACTIVE' && input.status !== 'PAUSED') throw new CrmValidationError('Choose pause or resume.');
+      return NextResponse.json(await setMetaCampaignStatus(input.campaignId, input.status), { headers: crmHeaders() });
     }
     if (input.action !== 'sync') throw new CrmValidationError('Unknown action.');
     const dates = range(typeof input.since === 'string' ? input.since : undefined, typeof input.until === 'string' ? input.until : undefined);
