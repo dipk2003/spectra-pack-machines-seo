@@ -324,7 +324,7 @@ export async function getCrmWorkspace(viewer: CrmViewer, offset = 0): Promise<Cr
       ? recentActivities
       : recentActivities.map((activity) => ({ ...activity, actorEmail: '' })),
     migrationReady: true,
-    capabilities: { emailSending: isEmailConfigured(), whatsappSending: false, phoneCalling: plivoConfiguration(viewer.email).configured },
+    capabilities: { emailSending: isEmailConfigured(), whatsappSending: Boolean(process.env.WHATSAPP_ACCESS_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID && process.env.WHATSAPP_APP_SECRET && process.env.WHATSAPP_VERIFY_TOKEN && /^v\d+\.\d+$/.test(process.env.WHATSAPP_GRAPH_VERSION || '')), phoneCalling: plivoConfiguration(viewer.email).configured },
     totalLeadCount: total,
     leadLimit: CRM_LEAD_LIMIT,
     hasMoreLeads: offset + leads.length < total,
@@ -691,6 +691,46 @@ export async function createCrmCommunication(
     throw new CrmValidationError(error instanceof Error ? error.message : 'Invalid contact details.');
   }
   const leadNames = new Map([[leadId, lead.name]]);
+  if (input.action === 'send' && input.channel === 'whatsapp') {
+    if (!process.env.WHATSAPP_ACCESS_TOKEN || !process.env.WHATSAPP_PHONE_NUMBER_ID || !/^v\d+\.\d+$/.test(process.env.WHATSAPP_GRAPH_VERSION || '')) {
+      throw new CrmValidationError('WhatsApp Cloud API sending is not connected. Configure the server-side WhatsApp access token, phone number ID and Graph API version.');
+    }
+    if (!body || !isCrmUuid(input.requestId)) throw new CrmValidationError('Add a message and valid request ID before sending.');
+    const recipientMatch = launchUrl.match(/^https:\/\/wa\.me\/(\d+)\?/);
+    const recipient = recipientMatch?.[1] || '';
+    if (!recipient) throw new CrmValidationError('Add a valid phone number with country code first.');
+    const db = getSupabaseAdmin();
+    const { data: reservation, error: reserveError } = await db.rpc('crm_reserve_whatsapp', {
+      p_request_id: input.requestId, p_lead_id: leadId, p_actor_id: viewer.userId,
+      p_owner_access: viewer.canViewAllLeads, p_recipient: recipient, p_body: body,
+    });
+    if (reserveError) throwDatabaseError(reserveError);
+    const reserved = reservation as { created: boolean; status: 'reserved' | 'sent' | 'failed' | 'uncertain'; provider_id: string | null };
+    if (!reserved) throw new Error('WhatsApp send reservation returned an invalid result.');
+    if (!reserved.created) return { status: reserved.status, notice: reserved.status === 'sent' ? 'This WhatsApp message was already accepted by Meta.' : 'This request was already recorded. Check WhatsApp and the CRM timeline before sending again.' };
+
+    let status: 'sent' | 'failed' | 'uncertain' = 'uncertain';
+    let providerId = '';
+    let message = 'The result is uncertain. Check WhatsApp and the CRM timeline before retrying.';
+    try {
+      const response = await fetch(`https://graph.facebook.com/${process.env.WHATSAPP_GRAPH_VERSION}/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`, {
+        method: 'POST', headers: { Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: recipient, type: 'text', text: { preview_url: false, body } }),
+        cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(15000),
+      });
+      const result = response.ok ? await response.json() as { messages?: Array<{ id?: string }> } : null;
+      providerId = typeof result?.messages?.[0]?.id === 'string' ? result.messages[0].id : '';
+      if (response.ok && providerId) { status = 'sent'; message = 'Accepted by WhatsApp; delivery is not confirmed until a delivery status arrives.'; }
+      else if (response.status >= 400 && response.status < 500) { status = 'failed'; message = 'WhatsApp rejected the message. Check the recipient, account permissions and 24-hour messaging window or template requirements.'; }
+    } catch { /* Network failure after submission may be ambiguous. */ }
+    const { error: finalizeError } = await db.rpc('crm_finish_whatsapp', { p_request_id: input.requestId, p_actor_id: viewer.userId, p_status: status, p_provider_id: providerId });
+    const activity = await recordCrmActivity(viewer, leadId, {
+      activityType: 'whatsapp', body,
+      outcome: status === 'sent' ? 'WhatsApp accepted by provider; delivery pending.' : status === 'failed' ? 'WhatsApp provider rejected message.' : 'WhatsApp send result uncertain; check before retrying.',
+      metadata: { channel: 'whatsapp', provider: 'whatsapp_cloud_api', status: finalizeError ? 'uncertain' : status, externalMessageId: providerId, requestId: input.requestId, contactConfirmed: false },
+    });
+    return { activity: mapActivityRow(activity, leadNames), status: finalizeError ? 'uncertain' : status, notice: finalizeError ? 'WhatsApp may have accepted this message, but the result could not be saved. Check WhatsApp before retrying.' : message };
+  }
   if (input.action === 'send' && input.channel === 'call') {
     const config = plivoConfiguration(viewer.email);
     if (!config.configured) throw new CrmValidationError('CRM calling is not connected. Ask the administrator to configure Plivo and your callback mobile number.');

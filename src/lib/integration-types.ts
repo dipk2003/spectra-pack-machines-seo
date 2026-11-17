@@ -8,6 +8,15 @@ export type AdCampaign = {
   provider: AdProvider; account_id: string; campaign_id: string; campaign_name: string;
   status: string; objective: string; channel: string; start_date: string; end_date: string;
 };
+export type AdAlert = {
+  id: string; provider: AdProvider; account_id: string; campaign_id: string;
+  campaign_name: string; alert_type: 'campaign_stopped' | 'budget_limited' | 'account_limit_near' | 'account_limit_reached';
+  severity: 'warning' | 'critical'; message: string; created_at: string;
+};
+export type AdAccountSpend = {
+  provider: AdProvider; account_id: string; account_name: string; currency: string;
+  spend_cap: number; amount_spent: number; balance_due: number; synced_at: string;
+};
 export type ProviderEvent = {
   provider: 'whatsapp' | 'twilio'; event_key: string; external_id: string;
   phone: string; direction: 'inbound' | 'outbound' | 'unknown';
@@ -19,6 +28,8 @@ export type IntegrationConnection = { name: string; configured: boolean; missing
 export type IntegrationReport = {
   connections: IntegrationConnection[]; databaseReady: boolean;
   metrics: AdMetric[]; campaigns: AdCampaign[]; events: StoredProviderEvent[];
+  alerts: AdAlert[];
+  accountSpend: AdAccountSpend[];
   syncs: { provider: string; status: string; message: string; completed_at: string; range_start: string; range_end: string }[];
   since: string; until: string;
 };

@@ -316,7 +316,10 @@ These variables are referenced by the codebase and should be documented for depl
 - `META_GRAPH_VERSION` - Graph API version used for Meta Ads Insights (format: `v<number>.0`)
 - `META_LEAD_WEBHOOK_VERIFY_TOKEN`, `META_APP_SECRET`, `META_LEADS_ACCESS_TOKEN` - server-only Meta Lead Ads webhook credentials; the access token needs the approved Page lead retrieval permissions
 - `GOOGLE_ADS_LEAD_WEBHOOK_KEY` - private shared key configured in the Google lead form webhook
-- `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID` - server-only inbound WhatsApp webhook credentials
+- `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID` - WhatsApp webhook credentials
+- `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_GRAPH_VERSION` - server-only Cloud API credentials for staff replies from the CRM
+- `META_SPEND_CAP_ALERT_PERCENT` - Meta account spend-cap alert threshold (defaults to 10% remaining)
+- `OWNER_NOTIFICATION_EMAIL` (or `ADMIN_EMAIL`) - recipient for ad delivery and spend-cap alert emails
 - `CRON_SECRET` - secret used to authorize the scheduled daily ads report sync
 - `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`
 
@@ -339,11 +342,13 @@ For Meta Lead Ads, deploy the site first, then configure a Page webhook in Meta 
 
 Copy `.env.example` to `.env.local` for local development and fill only the integrations you intend to enable. Add production values in your hosting provider's encrypted environment settings, then redeploy. The template contains blank placeholders; never paste real tokens into source control or `NEXT_PUBLIC_*` variables.
 
-Apply `supabase/migrations/20261018_crm_call_recordings.sql` after the existing CRM migrations; it installs the deduplication table and secure ingestion function for these ad form webhooks. Then apply `supabase/migrations/20261018_crm_ad_campaign_catalog.sql` and `supabase/migrations/20261018_crm_whatsapp_ad_leads.sql`. In `/admin/leads`, Google and Meta form leads appear with their source, form/ad details and campaign IDs where the provider exposes them. `/admin/integrations` syncs campaign inventory (including paused campaigns), date-range performance and CRM leads.
+Apply `supabase/migrations/20261018_crm_call_recordings.sql` after the existing CRM migrations; it installs the deduplication table and secure ingestion function for these ad form webhooks. Then apply `supabase/migrations/20261018_crm_ad_campaign_catalog.sql`, `supabase/migrations/20261018_crm_whatsapp_ad_leads.sql`, and `supabase/migrations/20261117_crm_ad_alerts.sql` in order. In `/admin/leads`, Google and Meta form leads appear with their source, form/ad details and campaign IDs where the provider exposes them. `/admin/integrations` syncs campaign inventory (including paused campaigns), date-range performance and CRM leads.
 
 ### WhatsApp Inbound Leads and Click-to-WhatsApp Attribution
 
-Connect a number using the official WhatsApp Business Platform Cloud API and subscribe the Meta app's WhatsApp Business Account webhook to `messages` at `https://YOUR_DOMAIN/api/webhooks/whatsapp`. Set `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, and `WHATSAPP_PHONE_NUMBER_ID`. Apply `supabase/migrations/20261018_crm_whatsapp_ad_leads.sql` after `20260926_crm_integrations.sql`. New inbound messages from an unmatched, unique phone create an unassigned CRM lead; one exact phone match appends activity to that lead, while ambiguous duplicate matches stay in the owner inbox. Meta Click-to-WhatsApp referral/ad identifiers are retained when Meta includes them in the first inbound message. Existing WhatsApp Business app history is not backfilled, and staff replies still open WhatsApp rather than sending through the Cloud API.
+Connect a number using the official WhatsApp Business Platform Cloud API and subscribe the Meta app's WhatsApp Business Account webhook to `messages` at `https://YOUR_DOMAIN/api/webhooks/whatsapp`. Set `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN`, and `WHATSAPP_GRAPH_VERSION`. Apply `supabase/migrations/20261018_crm_whatsapp_ad_leads.sql` after `20260926_crm_integrations.sql`, then apply `20261117_crm_ad_alerts.sql`. New inbound messages from an unmatched, unique phone create an unassigned CRM lead; one exact phone match appends activity to that lead, while ambiguous duplicate matches stay in the owner inbox. Meta Click-to-WhatsApp referral/ad identifiers are retained when Meta includes them in the first inbound message. Existing WhatsApp Business app history is not backfilled. Staff can send free-form WhatsApp replies from a lead when Cloud API is connected; Meta requires an approved template outside the customer service window, and the current CRM composer sends text only.
+
+The CRM checks campaigns and Meta account spend caps when the daily ads sync runs. It records alerts in `/admin/integrations` and emails the configured owner address. Meta's `balance` field is the invoice amount due, not prepaid wallet funds; account cap data appears only when the Meta token can read those billing fields. Google campaign budget-limit and delivery status are provider status signals, not an account-funds balance. A campaign pause or spend-cap alert is not an instant monitoring feed; use the manual sync control to refresh before waiting for the daily job.
 
 ### CRM Calling and Optional Call Recording
 

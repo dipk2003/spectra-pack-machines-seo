@@ -5,7 +5,7 @@ const REQUIRED = {
   google: ['GOOGLE_ADS_CUSTOMER_ID', 'GOOGLE_ADS_CLIENT_ID', 'GOOGLE_ADS_CLIENT_SECRET', 'GOOGLE_ADS_REFRESH_TOKEN'],
   meta: ['META_AD_ACCOUNT_ID', 'META_ADS_ACCESS_TOKEN', 'META_GRAPH_VERSION'],
   'meta-leads': ['META_LEAD_WEBHOOK_VERIFY_TOKEN', 'META_APP_SECRET', 'META_LEADS_ACCESS_TOKEN', 'META_GRAPH_VERSION'],
-  whatsapp: ['WHATSAPP_APP_SECRET', 'WHATSAPP_VERIFY_TOKEN', 'WHATSAPP_PHONE_NUMBER_ID'],
+  whatsapp: ['WHATSAPP_APP_SECRET', 'WHATSAPP_VERIFY_TOKEN', 'WHATSAPP_PHONE_NUMBER_ID', 'WHATSAPP_ACCESS_TOKEN', 'WHATSAPP_GRAPH_VERSION'],
   twilio: ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_WEBHOOK_URL'],
 } as const;
 
@@ -177,4 +177,23 @@ export async function fetchAdCampaigns(provider: AdProvider): Promise<{ account:
     cursors.add(after);
   }
   throw new Error('Meta campaign pagination limit reached.');
+}
+
+/** Reads Meta's account-level spending cap where the token has account billing access. */
+export async function fetchMetaSpendCap(): Promise<{ account: string; name: string; currency: string; cap: number; spent: number; balanceDue: number } | null> {
+  const account = process.env.META_AD_ACCOUNT_ID?.replace(/^act_/, '') || '';
+  const version = process.env.META_GRAPH_VERSION || '';
+  if (!/^\d+$/.test(account) || !/^v\d+\.0$/.test(version) || !process.env.META_ADS_ACCESS_TOKEN?.trim()) return null;
+  try {
+    const result = await providerJson(`https://graph.facebook.com/${version}/act_${account}?fields=account_id,name,currency,spend_cap,amount_spent,balance`, { headers: { Authorization: `Bearer ${process.env.META_ADS_ACCESS_TOKEN}` } });
+    const cap = Number(result.spend_cap || 0);
+    const spent = Number(result.amount_spent || 0);
+    const balanceDue = Number(result.balance || 0);
+    if (![cap, spent, balanceDue].every(Number.isFinite) || typeof result.currency !== 'string' || !/^[A-Z]{3}$/.test(result.currency)) return null;
+    return { account, name: typeof result.name === 'string' ? result.name.slice(0, 200) : account, currency: result.currency, cap, spent, balanceDue };
+  } catch {
+    // Meta account billing fields need separate account permissions in some setups.
+    // Keep the campaign sync healthy when only billing access is unavailable.
+    return null;
+  }
 }

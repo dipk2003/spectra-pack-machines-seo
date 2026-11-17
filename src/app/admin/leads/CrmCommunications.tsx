@@ -18,12 +18,14 @@ type CommunicationResult = {
 export default function CrmCommunications({
   lead,
   emailSending,
+  whatsappSending,
   phoneCalling,
   onActivity,
   requestIds,
 }: {
   lead: CrmLead;
   emailSending: boolean;
+  whatsappSending: boolean;
   phoneCalling: boolean;
   onActivity: (activity: CrmActivity) => void;
   requestIds: Map<string, string>;
@@ -32,6 +34,7 @@ export default function CrmCommunications({
   const [subject, setSubject] = useState(`Your ${lead.machineInterest || 'packaging machine'} enquiry — Spectra Pack`);
   const [body, setBody] = useState(`Hello ${lead.name}, thank you for your enquiry about ${lead.machineInterest || 'packaging machines'}. Could you share your product, pack size and required production capacity so we can help you choose a suitable machine?`);
   const [emailMode, setEmailMode] = useState<'app' | 'crm' | 'gmail' | 'outlook'>(emailSending ? 'crm' : 'gmail');
+  const [whatsappMode, setWhatsappMode] = useState<'app' | 'crm'>(whatsappSending ? 'crm' : 'app');
   const [template, setTemplate] = useState('requirements');
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
@@ -59,7 +62,7 @@ export default function CrmCommunications({
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     if (busy) return;
-    const action = (channel === 'email' && emailMode === 'crm') || (channel === 'call' && callMode === 'crm') ? 'send' : 'launch';
+    const action = (channel === 'email' && emailMode === 'crm') || (channel === 'call' && callMode === 'crm') || (channel === 'whatsapp' && whatsappMode === 'crm') ? 'send' : 'launch';
     const fingerprint = channel === 'call' && action === 'send' ? callFingerprint : JSON.stringify({ leadId: lead.id, recipient: channel === 'email' ? lead.email : lead.phone, channel, action, subject, body });
     // The page owns these IDs so switching channels or reopening a lead cannot
     // turn a retry of an uncertain email into a second SMTP submission.
@@ -70,7 +73,7 @@ export default function CrmCommunications({
     }
     // Reserve a browsing context during the click so the provider launch is not blocked after the API response.
     const webmail = channel === 'email' && (emailMode === 'gmail' || emailMode === 'outlook');
-    const popup = channel === 'whatsapp' || webmail ? window.open('about:blank', '_blank') : null;
+    const popup = (channel === 'whatsapp' && whatsappMode === 'app') || webmail ? window.open('about:blank', '_blank') : null;
     if (popup) popup.opener = null;
     setBusy(true);
     setNotice('');
@@ -94,6 +97,11 @@ export default function CrmCommunications({
         setNotice(result.notice || 'Call requested. Check your registered mobile.');
         if (result.status === 'queued') toast.success('Calling your mobile');
         else if (result.status === 'failed') toast.error('Call request rejected');
+      } else if (action === 'send' && channel === 'whatsapp') {
+        setNotice(result.notice || (result.status === 'sent' ? 'Accepted by WhatsApp; delivery is not confirmed yet.' : 'Check WhatsApp and the CRM activity before retrying.'));
+        if (result.status === 'sent') toast.success('WhatsApp accepted by provider');
+        else if (result.status === 'failed') { requestIds.delete(fingerprint); toast.error('WhatsApp message was rejected'); }
+        else toast('WhatsApp result needs checking', { icon: '⚠️' });
       } else if (action === 'send') {
         setNotice(result.notice || (result.status === 'accepted' ? 'Accepted by the email server. Delivery is not confirmed.' : 'The email result is not confirmed. Check the activity history before starting another email.'));
         if (result.status === 'accepted') toast.success('Email accepted by server');
@@ -146,6 +154,7 @@ export default function CrmCommunications({
           <label><span>Call using</span><select value={callMode} disabled={busy} onChange={event => { setCallMode(event.target.value as 'device' | 'crm'); setNotice(''); setLaunchUrl(''); }}><option value="device">My device dialer</option><option value="crm" disabled={!phoneCalling}>CRM callback (Plivo){!phoneCalling ? ' — setup required' : ''}</option></select></label>
           {!phoneCalling && <p className={styles.inlineWarning}>CRM calling needs a connected Plivo account and your registered callback mobile. Contact the administrator to activate it.</p>}
         </>}
+        {channel === 'whatsapp' && <label><span>Send using</span><select value={whatsappMode} onChange={(event) => { setWhatsappMode(event.target.value as typeof whatsappMode); setNotice(''); setLaunchUrl(''); }} disabled={busy}><option value="app">WhatsApp app with draft</option>{whatsappSending && <option value="crm">WhatsApp Cloud API</option>}</select></label>}
         {channel !== 'call' && <>
           <label><span>Message template</span><select value={template} onChange={(event) => applyTemplate(event.target.value)} disabled={busy}><option value="requirements">Ask about requirements</option><option value="quotation">Enquiry follow-up</option><option value="demo">Arrange a discussion</option><option value="custom">Custom message</option></select></label>
           {channel === 'email' && <>
@@ -157,13 +166,13 @@ export default function CrmCommunications({
         <p className={styles.communicationHint}>{channel === 'call'
           ? callMode === 'crm' ? 'The CRM calls your registered mobile first. Answer to connect to this customer; provider call charges apply.' : 'Use your mobile or an installed calling app. On a desktop without a calling app, the dialer cannot place a call.'
           : channel === 'whatsapp'
-            ? 'Opens WhatsApp with your draft. Review and send the message in WhatsApp.'
+            ? whatsappMode === 'crm' ? 'Sends through WhatsApp Cloud API. Free-form replies require the customer service window; approved templates are required outside it.' : 'Opens WhatsApp with your draft. Review and send the message in WhatsApp.'
             : emailMode === 'crm'
               ? 'Sends this email through the configured company email server. Server acceptance does not confirm delivery.'
               : `Opens ${emailMode === 'gmail' ? 'Gmail' : emailMode === 'outlook' ? 'Outlook' : 'your email app'} with this draft. Review and send it there.`}</p>
         {channel === 'call' && directPhoneUrl && <div className={styles.quickActions}><a className="btn btn-outline btn-sm" href={directPhoneUrl}>Dial directly</a><button type="button" onClick={() => void navigator.clipboard.writeText(directPhoneUrl.slice(4)).then(() => toast.success('Phone number copied')).catch(() => toast.error('Please copy the number shown above.'))}>Copy number</button></div>}
         {missingContact && <p className={styles.inlineWarning}>Add and save the customer’s {channel === 'email' ? 'email address' : 'phone number with country code'} first.</p>}
-        <button className="btn btn-primary btn-sm" disabled={busy || missingContact}>{channel === 'email' && emailMode === 'crm' ? <Send size={15} /> : <ExternalLink size={15} />}{busy ? 'Preparing…' : channel === 'call' ? callMode === 'crm' ? 'Call from CRM' : 'Open dialer' : channel === 'whatsapp' ? 'Open WhatsApp' : emailMode === 'crm' ? 'Send email from CRM' : emailMode === 'gmail' ? 'Open Gmail draft' : emailMode === 'outlook' ? 'Open Outlook draft' : 'Open email app'}</button>
+        <button className="btn btn-primary btn-sm" disabled={busy || missingContact}>{(channel === 'email' && emailMode === 'crm') || (channel === 'whatsapp' && whatsappMode === 'crm') ? <Send size={15} /> : <ExternalLink size={15} />}{busy ? 'Preparing…' : channel === 'call' ? callMode === 'crm' ? 'Call from CRM' : 'Open dialer' : channel === 'whatsapp' ? whatsappMode === 'crm' ? 'Send WhatsApp from CRM' : 'Open WhatsApp' : emailMode === 'crm' ? 'Send email from CRM' : emailMode === 'gmail' ? 'Open Gmail draft' : emailMode === 'outlook' ? 'Open Outlook draft' : 'Open email app'}</button>
         {channel === 'call' && callMode === 'crm' && callRequested && <button type="button" className="btn btn-outline btn-sm" disabled={busy} onClick={() => { requestIds.delete(callFingerprint); setCallRequested(false); setNotice('Ready for a new call. Make sure the previous call has ended before clicking Call from CRM.'); }}>Prepare a new call</button>}
         {notice && <p className={styles.communicationNotice} role="status">{notice}</p>}
         {launchUrl && <a className={styles.continueLink} href={launchUrl} target={launchUrl.startsWith('https:') ? '_blank' : undefined} rel="noopener noreferrer">{channel === 'call' ? 'Open dialer again' : channel === 'whatsapp' ? 'Continue to WhatsApp' : 'Continue to email'} <ExternalLink size={13} /></a>}

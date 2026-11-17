@@ -8,7 +8,7 @@ import styles from './page.module.css';
 const names: Record<string, string> = { google: 'Google Ads', meta: 'Meta Ads', 'meta-leads': 'Meta Lead Ads', whatsapp: 'WhatsApp Business API', twilio: 'Phone provider (Twilio)' };
 const setup: Record<string, string> = {
   google: 'Connect OAuth access from a Google Cloud project approved for Google Ads API access. The website AW tag alone cannot read spend.',
-  meta: 'Connect an ad account with an access token permitted to read advertising insights. A Pixel ID alone cannot read spend.',
+  meta: 'Connect an ad account with an access token permitted to read advertising insights. A Pixel ID alone cannot read spend. Reading the account spending cap also needs ad account billing access.',
   'meta-leads': 'Receive native Facebook and Instagram lead form submissions in the CRM. The Meta app must also subscribe its Page to the leadgen webhook event.',
   whatsapp: 'Use the official WhatsApp Business Platform Cloud API. New inbound messages create CRM leads; a unique existing phone match is added to that lead, and duplicate phone matches remain for staff review.',
   twilio: 'No calling service is connected. This receiver supports provider call status and optional provider-generated transcripts; it does not start calls or record audio.',
@@ -68,7 +68,7 @@ export default function IntegrationPanel() {
     {notice && <p className={styles.notice} role="status">{notice}</p>}
     {!data && !error && <p role="status">Loading connections…</p>}
     {data && <>
-      {!data.databaseReady && <p className={styles.warning}>Database setup pending. Apply the CRM integration, ad campaign catalog, ad form lead ingestion and WhatsApp lead capture migrations before syncing campaigns or receiving provider leads. Existing website enquiries remain available in Sales CRM.</p>}
+      {!data.databaseReady && <p className={styles.warning}>Database setup pending. Apply the CRM integration, ad campaign catalog, ad alert, ad form lead ingestion and WhatsApp lead capture migrations before syncing campaigns or receiving provider leads. Existing website enquiries remain available in Sales CRM.</p>}
       <section className={styles.connections} aria-label="Provider connections">{data.connections.map(connection => <article className={styles.card} key={connection.name}>
         <div className={styles.cardTitle}><h2>{names[connection.name]}</h2><span className={connection.configured ? styles.ready : styles.pending}>{connection.configured ? 'Configured • verification needed' : 'Not connected'}</span></div>
         <p>{setup[connection.name]}</p>
@@ -76,6 +76,15 @@ export default function IntegrationPanel() {
         {connection.name === 'whatsapp' && <p className={styles.endpoint}>Webhook: <code>/api/webhooks/whatsapp</code></p>}
         {connection.name === 'meta-leads' && <p className={styles.endpoint}>Webhook: <code>/api/webhooks/meta-leads</code> · Meta Page event: <code>leadgen</code></p>}
       </article>)}</section>
+      <section className={styles.card}>
+        <div className={styles.cardTitle}><div><h2>Spend cap & delivery alerts</h2><p>Checked whenever ad reports sync. Owner notifications use the configured email channel.</p></div></div>
+        {!data.accountSpend.length ? <p className={styles.empty}>Meta account spend-cap data is not available yet. Sync Meta Ads with an access token that can read billing fields; accounts without a spend cap will not show a cap remaining.</p> : <div className={styles.totals}>{data.accountSpend.map(account => {
+          const remaining = account.spend_cap > 0 ? Math.max(0, account.spend_cap - account.amount_spent) : null;
+          return <article key={`${account.provider}:${account.account_id}`}><h3>{account.account_name} · {names[account.provider]}</h3><dl><dt>Currency</dt><dd>{account.currency}</dd><dt>Spending cap</dt><dd>{account.spend_cap > 0 ? format(account.spend_cap) : 'No cap set'}</dd><dt>Spent against cap</dt><dd>{format(account.amount_spent)}</dd><dt>Cap remaining</dt><dd>{remaining === null ? 'Not applicable' : format(remaining)}</dd><dt>Balance due</dt><dd>{format(account.balance_due)}</dd></dl><p className={styles.muted}>Meta billing units are shown as returned by the platform. Balance due is an invoice amount, not prepaid wallet funds.</p></article>;
+        })}</div>}
+        <p>Alerts appear here when a previously active campaign stops, Google marks a campaign limited by budget, or Meta spend-cap remaining falls below <code>META_SPEND_CAP_ALERT_PERCENT</code> (default 10%). A report sync runs daily; connect provider credentials and owner email to receive notifications.</p>
+        {!data.alerts.length ? <p className={styles.empty}>No campaign or spend-cap alerts recorded.</p> : data.alerts.map(alert => <article className={styles.event} key={alert.id}><div className={styles.cardTitle}><strong>{alert.alert_type.replace(/_/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase())} · {alert.campaign_name}</strong><span className={alert.severity === 'critical' ? styles.pending : styles.ready}>{alert.severity}</span></div><p>{alert.message}</p><p className={styles.muted}>{names[alert.provider]} · Account {alert.account_id} · {new Date(alert.created_at).toLocaleString()}</p></article>)}
+      </section>
       <section className={styles.card}>
         <h2>Ad campaigns and lead capture</h2>
         <p>Native lead forms can create CRM leads without sending the customer to your website. Configure these webhook URLs and their server-only verification credentials in your hosting environment.</p>
@@ -102,7 +111,7 @@ export default function IntegrationPanel() {
           <div className={styles.tableWrap}><table><caption>Daily campaign reporting</caption><thead><tr><th>Date</th><th>Campaign</th><th>Platform / account</th><th>Currency</th><th>Spend</th><th>Impressions</th><th>Clicks</th><th>Conversions / leads</th><th>Reported value</th></tr></thead><tbody>{data.metrics.map(row => <tr key={`${row.provider}:${row.account_id}:${row.campaign_id}:${row.day}`}><td>{row.day}</td><td>{row.campaign_name}<small>{row.campaign_id}</small></td><td>{names[row.provider]}<small>{row.account_id}</small></td><td>{row.currency}</td><td>{format(row.spend)}</td><td>{format(row.impressions)}</td><td>{format(row.clicks)}</td><td>{format(row.conversions)}</td><td>{format(row.conversion_value)}</td></tr>)}</tbody></table></div>
         </>}
       </section>
-      <section className={styles.card}><h2>Conversation inbox</h2><p>Latest 100 received events, across all dates. New inbound WhatsApp messages create leads; unique phone matches are added to existing leads, and ambiguous matches stay here for owner review. Meta Click-to-WhatsApp referral details are retained when supplied with the first inbound message. This does not import old WhatsApp Business app history or send staff replies yet.</p>
+      <section className={styles.card}><h2>Conversation inbox</h2><p>Latest 100 received events, across all dates. New inbound WhatsApp messages create leads; unique phone matches are added to existing leads, and ambiguous matches stay here for owner review. Meta Click-to-WhatsApp referral details are retained when supplied with the first inbound message. Old WhatsApp Business app history is not imported; staff can send replies from a lead when the Cloud API is configured.</p>
         {!data.events.length && <p className={styles.empty}>No provider events received. Connect WhatsApp Business API or a supported phone provider to start automatic sync.</p>}
         {data.events.map(event => <article className={styles.event} key={event.id}><div className={styles.cardTitle}><strong>{names[event.provider]} · {event.direction} · {event.kind.replace(/_/g, ' ')}</strong><span>{event.status}</span></div><p className={styles.muted}>{event.phone ? `+${event.phone}` : 'Phone not supplied'} · {new Date(event.occurred_at).toLocaleString()}</p><p className={styles.body}>{event.body}</p>
           {event.lead_id ? <p>Linked lead: <Link href="/admin/leads">{event.lead_id}</Link></p> : <div className={styles.controls}><label>Link to an existing lead ID<input placeholder="CRM lead UUID" value={leadIds[event.id] || ''} onChange={e => setLeadIds({ ...leadIds, [event.id]: e.target.value })} /></label><button className="btn btn-outline" disabled={busy || !leadIds[event.id]} onClick={() => void act({ action: 'link', eventId: event.id, leadId: leadIds[event.id] })}>Link event</button></div>}
