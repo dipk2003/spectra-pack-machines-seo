@@ -4,7 +4,8 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 
 type MetaField = { name?: unknown; values?: unknown };
 type MetaLead = { id?: unknown; form_id?: unknown; ad_id?: unknown; created_time?: unknown; field_data?: unknown };
-type MetaFormRef = { pageId: string; formId: string; formName: string };
+type MetaPage = { id: string; name: string; accessToken: string };
+type MetaFormRef = { pageId: string; pageAccessToken: string; formId: string; formName: string };
 
 const text = (value: unknown, limit = 500) => typeof value === 'string'
   ? value.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, limit) : '';
@@ -42,37 +43,42 @@ async function graphGet(version: string, path: string, token: string, params: Re
   return body;
 }
 
-async function listPages(version: string, token: string, businessId: string) {
-  const pages: Array<{ id: string; name: string }> = [];
+async function listPages(version: string, token: string, configuredPageId: string) {
+  const pages: MetaPage[] = [];
   let after = '';
   const seen = new Set<string>();
   for (let count = 0; count < 20; count++) {
-    const edge = businessId ? `${businessId}/owned_pages` : 'me/accounts';
-    const result = await graphGet(version, edge, token, { fields: 'id,name', limit: '100', ...(after ? { after } : {}) });
+    // Lead forms and lead details need a Page access token. A System User token
+    // can mint these through /me/accounts when it has access to the Page.
+    const result = await graphGet(version, 'me/accounts', token, { fields: 'id,name,access_token', limit: '100', ...(after ? { after } : {}) });
     if (!Array.isArray(result.data)) throw new Error('Meta returned an unexpected Page list.');
     for (const page of result.data as Array<Record<string, unknown>>) {
       const id = text(page.id, 40);
-      if (/^\d{1,40}$/.test(id)) pages.push({ id, name: text(page.name, 200) });
+      const accessToken = text(page.access_token, 10000);
+      if (/^\d{1,40}$/.test(id) && accessToken && (!configuredPageId || configuredPageId === id)) pages.push({ id, name: text(page.name, 200), accessToken });
     }
     after = text((result.paging as Record<string, unknown> | undefined)?.cursors && ((result.paging as Record<string, unknown>).cursors as Record<string, unknown>).after, 500);
-    if (!result.paging || !after) return pages;
+    if (!result.paging || !after) {
+      if (!pages.length && configuredPageId) throw new Error('Meta did not return a Page access token for META_LEAD_PAGE_ID. Assign the Page to the System User and grant leads_retrieval, then generate a fresh token.');
+      return pages;
+    }
     if (seen.has(after)) throw new Error('Meta Page pagination repeated; sync stopped safely.');
     seen.add(after);
   }
   throw new Error('Meta returned too many Pages to sync in one request.');
 }
 
-async function listForms(version: string, token: string, pages: Array<{ id: string; name: string }>) {
+async function listForms(version: string, pages: MetaPage[]) {
   const forms: MetaFormRef[] = [];
   for (const page of pages) {
     let after = '';
     const seen = new Set<string>();
     for (let count = 0; count < 20; count++) {
-      const result = await graphGet(version, `${page.id}/leadgen_forms`, token, { fields: 'id,name', limit: '100', ...(after ? { after } : {}) });
+      const result = await graphGet(version, `${page.id}/leadgen_forms`, page.accessToken, { fields: 'id,name', limit: '100', ...(after ? { after } : {}) });
       if (!Array.isArray(result.data)) throw new Error('Meta returned an unexpected lead form list.');
       for (const form of result.data as Array<Record<string, unknown>>) {
         const formId = text(form.id, 40);
-        if (/^\d{1,40}$/.test(formId)) forms.push({ pageId: page.id, formId, formName: text(form.name, 200) });
+        if (/^\d{1,40}$/.test(formId)) forms.push({ pageId: page.id, pageAccessToken: page.accessToken, formId, formName: text(form.name, 200) });
       }
       after = text((result.paging as Record<string, unknown> | undefined)?.cursors && ((result.paging as Record<string, unknown>).cursors as Record<string, unknown>).after, 500);
       if (!result.paging || !after) break;
@@ -141,11 +147,9 @@ export async function syncMetaLeadBatch(cursorValue: unknown) {
   const configuredPageId = process.env.META_LEAD_PAGE_ID?.trim() || '';
   const businessId = process.env.META_BUSINESS_ID?.replace(/\s/g, '') || '';
   if (businessId && !/^\d{1,40}$/.test(businessId)) throw new Error('META_BUSINESS_ID must contain only the numeric Meta business ID.');
-  const pages = /^\d{1,40}$/.test(configuredPageId)
-    ? [{ id: configuredPageId, name: '' }]
-    : await listPages(version, token, businessId);
+  const pages = await listPages(version, token, configuredPageId);
   if (!pages.length) throw new Error('Meta returned no Pages for this token. Assign the Facebook Page to the System User and grant pages_show_list and leads_retrieval; set META_BUSINESS_ID or META_LEAD_PAGE_ID if needed, then generate a new token.');
-  const forms = await listForms(version, token, pages);
+  const forms = await listForms(version, pages);
   if (!forms.length) return { imported: 0, skipped: 0, done: true, nextCursor: null };
   if (cursor.formIndex >= forms.length) return { imported: 0, skipped: 0, done: true, nextCursor: null };
 
@@ -157,7 +161,7 @@ export async function syncMetaLeadBatch(cursorValue: unknown) {
   let after = cursor.after;
   while (formIndex < forms.length && remaining > 0) {
     const form = forms[formIndex];
-    const result = await graphGet(version, `${form.formId}/leads`, token, {
+    const result = await graphGet(version, `${form.formId}/leads`, form.pageAccessToken, {
       fields: 'id,created_time,field_data,ad_id,form_id', limit: String(remaining), ...(after ? { after } : {}),
     });
     if (!Array.isArray(result.data)) throw new Error('Meta returned an unexpected lead list.');

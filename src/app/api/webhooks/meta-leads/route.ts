@@ -34,6 +34,33 @@ async function fetchMetaLead(leadgenId: string, token: string, version: string) 
   return response.json() as Promise<Record<string, unknown>>;
 }
 
+async function pageAccessToken(pageId: string, systemUserToken: string, version: string) {
+  let after = '';
+  const seen = new Set<string>();
+  for (let count = 0; count < 20; count++) {
+    const url = new URL(`https://graph.facebook.com/${version}/me/accounts`);
+    url.searchParams.set('fields', 'id,access_token');
+    url.searchParams.set('limit', '100');
+    if (after) url.searchParams.set('after', after);
+    const response = await fetch(url, { headers: { Authorization: `Bearer ${systemUserToken}` }, cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(15000) });
+    const body = await response.json().catch(() => ({})) as Record<string, unknown>;
+    if (!response.ok || !Array.isArray(body.data)) throw new Error('Meta Page access could not be refreshed.');
+    const page = (body.data as Array<Record<string, unknown>>).find((item) => text(item.id, 40) === pageId);
+    if (page) {
+      const token = text(page.access_token, 10000);
+      if (token) return token;
+      throw new Error('Meta did not provide a Page access token.');
+    }
+    const paging = body.paging as Record<string, unknown> | undefined;
+    const nextAfter = text((paging?.cursors as Record<string, unknown> | undefined)?.after, 500);
+    if (!paging?.next || !nextAfter) break;
+    if (seen.has(nextAfter)) throw new Error('Meta Page pagination repeated.');
+    seen.add(nextAfter);
+    after = nextAfter;
+  }
+  throw new Error('The webhook Page is not assigned to the configured Meta System User.');
+}
+
 async function fetchMetaAdCampaign(adId: string, token: string, version: string) {
   if (!/^\d{1,40}$/.test(adId)) return { id: '', name: '' };
   const url = new URL(`https://graph.facebook.com/${version}/${encodeURIComponent(adId)}`);
@@ -78,9 +105,17 @@ export async function POST(req: NextRequest) {
 
   try {
     const db = getSupabaseAdmin();
+    const pageTokens = new Map<string, string>();
     const entries = Array.isArray(payload.entry) ? payload.entry : [];
     for (const entry of entries) {
       if (!entry || typeof entry !== 'object' || Array.isArray(entry)) continue;
+      const pageId = text((entry as Record<string, unknown>).id, 40);
+      if (!/^\d{1,40}$/.test(pageId)) continue;
+      let pageToken = pageTokens.get(pageId);
+      if (!pageToken) {
+        pageToken = await pageAccessToken(pageId, accessToken, version);
+        pageTokens.set(pageId, pageToken);
+      }
       const changes = Array.isArray((entry as Record<string, unknown>).changes) ? (entry as Record<string, unknown>).changes as unknown[] : [];
       for (const change of changes) {
         if (!change || typeof change !== 'object' || Array.isArray(change)) continue;
@@ -88,7 +123,7 @@ export async function POST(req: NextRequest) {
         if ((change as Record<string, unknown>).field !== 'leadgen' || !value || typeof value !== 'object' || Array.isArray(value)) continue;
         const leadgenId = text((value as Record<string, unknown>).leadgen_id, 200);
         if (!leadgenId) continue;
-        const lead = await fetchMetaLead(leadgenId, accessToken, version);
+        const lead = await fetchMetaLead(leadgenId, pageToken, version);
         const fields = fieldMap(lead.field_data);
         const name = fields.get('full_name') || [fields.get('first_name'), fields.get('last_name')].filter(Boolean).join(' ');
         const email = fields.get('email') || fields.get('email_address') || '';
