@@ -727,17 +727,31 @@ export async function createCrmCommunication(
     let status: 'sent' | 'failed' | 'uncertain' = 'uncertain';
     let providerId = '';
     let message = 'The result is uncertain. Check WhatsApp and the CRM timeline before retrying.';
+    let attemptedEnglishLocaleFallback = false;
     try {
-      const response = await fetch(`https://graph.facebook.com/${process.env.WHATSAPP_GRAPH_VERSION}/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`, {
-        method: 'POST', headers: { Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(useTemplate
-          ? { messaging_product: 'whatsapp', recipient_type: 'individual', to: recipient, type: 'template', template: { name: templateName, language: { code: templateLanguage } } }
-          : { messaging_product: 'whatsapp', recipient_type: 'individual', to: recipient, type: 'text', text: { preview_url: false, body } }),
-        cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(15000),
-      });
-      const result = await response.json().catch(() => null) as { messages?: Array<{ id?: string }>; error?: { code?: number; error_subcode?: number; type?: string; message?: string; fbtrace_id?: string } } | null;
+      type WhatsAppSendResult = { messages?: Array<{ id?: string }>; error?: { code?: number; error_subcode?: number; type?: string; message?: string; fbtrace_id?: string } } | null;
+      const sendTemplate = async (languageCode: string) => {
+        const response = await fetch(`https://graph.facebook.com/${process.env.WHATSAPP_GRAPH_VERSION}/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`, {
+          method: 'POST', headers: { Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(useTemplate
+            ? { messaging_product: 'whatsapp', recipient_type: 'individual', to: recipient, type: 'template', template: { name: templateName, language: { code: languageCode } } }
+            : { messaging_product: 'whatsapp', recipient_type: 'individual', to: recipient, type: 'text', text: { preview_url: false, body } }),
+          cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(15000),
+        });
+        const result = await response.json().catch(() => null) as WhatsAppSendResult;
+        return { response, result };
+      };
+      const alternateEnglishLanguage = templateLanguage === 'en' ? 'en_US' : templateLanguage === 'en_US' ? 'en' : null;
+      let { response, result } = await sendTemplate(templateLanguage);
+      // Meta rejects an unknown template translation synchronously (132001), so retrying
+      // the English locale alias cannot duplicate an accepted message.
+      if (useTemplate && result?.error?.code === 132001 && alternateEnglishLanguage) {
+        attemptedEnglishLocaleFallback = true;
+        ({ response, result } = await sendTemplate(alternateEnglishLanguage));
+        if (response.ok) message = `Accepted by WhatsApp using the ${alternateEnglishLanguage} template translation; delivery is not confirmed until a delivery status arrives.`;
+      }
       providerId = typeof result?.messages?.[0]?.id === 'string' ? result.messages[0].id : '';
-      if (response.ok && providerId) { status = 'sent'; message = 'Accepted by WhatsApp; delivery is not confirmed until a delivery status arrives.'; }
+      if (response.ok && providerId) { status = 'sent'; if (!message.includes('template translation')) message = 'Accepted by WhatsApp; delivery is not confirmed until a delivery status arrives.'; }
       else if (response.status >= 400 && response.status < 500) {
         status = 'failed';
         const code = result?.error?.code;
@@ -748,7 +762,7 @@ export async function createCrmCommunication(
           : code === 131047
           ? 'The 24-hour WhatsApp customer service window has expired. Send an approved template message, or ask the customer to message you first.'
           : code === 132000 || code === 132001 || code === 132015 || code === 132016
-            ? `WhatsApp rejected the configured template (Meta error ${code}${typeof result?.error?.error_subcode === 'number' ? `/${result.error.error_subcode}` : ''}). Check that WHATSAPP_TEMPLATE_NAME and WHATSAPP_TEMPLATE_LANGUAGE exactly match an approved, active template.${providerDetail ? ` Meta detail: ${providerDetail}` : ''}`
+            ? `WhatsApp rejected the configured template (Meta error ${code}${typeof result?.error?.error_subcode === 'number' ? `/${result.error.error_subcode}` : ''}). Check that WHATSAPP_TEMPLATE_NAME and WHATSAPP_TEMPLATE_LANGUAGE exactly match an approved, active template.${attemptedEnglishLocaleFallback ? ' Both en and en_US translations were tried.' : ''}${providerDetail ? ` Meta detail: ${providerDetail}` : ''}`
             : code === 131030
               ? 'This recipient is not allowed for the current WhatsApp account. Check the number and, for a test number, add it as an allowed recipient.'
               : code === 131009 || code === 131026
