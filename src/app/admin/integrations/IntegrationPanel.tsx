@@ -23,6 +23,8 @@ export default function IntegrationPanel() {
   const [notice, setNotice] = useState('');
   const [leadIds, setLeadIds] = useState<Record<string, string>>({});
   const [origin, setOrigin] = useState('');
+  const [metaLeadCursor, setMetaLeadCursor] = useState<string | null>(null);
+  const [metaLeadProgress, setMetaLeadProgress] = useState<{ imported: number; skipped: number; duplicates: number } | null>(null);
   useEffect(() => setOrigin(window.location.origin), []);
   const campaignPerformance = useMemo(() => {
     const grouped = new Map<string, AdMetric>();
@@ -63,6 +65,40 @@ export default function IntegrationPanel() {
     finally { setBusy(false); }
   };
 
+  const syncMetaLeads = async () => {
+    setBusy(true); setError(''); setNotice(''); setMetaLeadProgress({ imported: 0, skipped: 0, duplicates: 0 });
+    let cursor = metaLeadCursor;
+    let imported = 0;
+    let skipped = 0;
+    let duplicates = 0;
+    try {
+      // Keep each request small enough for serverless limits; repeat from the returned cursor.
+      for (let batch = 0; batch < 100; batch++) {
+        const response = await fetch('/api/crm/integrations/meta-leads', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cursor ? { cursor } : {}),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Could not import Meta leads.');
+        imported += Number(result.imported || 0);
+        skipped += Number(result.skipped || 0);
+        duplicates += Number(result.duplicates || 0);
+        cursor = typeof result.nextCursor === 'string' ? result.nextCursor : null;
+        setMetaLeadCursor(cursor);
+        setMetaLeadProgress({ imported, skipped, duplicates });
+        if (result.done) {
+          setNotice(`Meta lead import complete: ${imported} added; ${duplicates} already in CRM; ${skipped} skipped because the form did not provide a name and phone/email.`);
+          return;
+        }
+        if (batch % 3 === 2) setNotice(`Importing Meta history… ${imported} added so far.`);
+      }
+      setNotice(`Imported ${imported} leads; ${duplicates} were already in CRM. Click “Continue import” to resume from the saved cursor.`);
+    } catch (cause) {
+      setMetaLeadCursor(cursor);
+      setError(cause instanceof Error ? cause.message : 'Could not import Meta leads.');
+    } finally { setBusy(false); }
+  };
+
   return <div className={styles.page}>
     <header className={styles.header}><div><p className={styles.eyebrow}>Sales CRM</p><h1>Ads & Conversations</h1><p>Campaign reports and messages received from connected providers.</p></div><Link href="/admin/leads" className="btn btn-outline">Open sales CRM</Link></header>
     {error && <p className={styles.warning} role="alert">{error}</p>}
@@ -90,7 +126,10 @@ export default function IntegrationPanel() {
         <h2>Ad campaigns and lead capture</h2>
         <p>Native lead forms can create CRM leads without sending the customer to your website. Configure these webhook URLs and their server-only verification credentials in your hosting environment.</p>
         <div className={styles.event}><strong>Google Ads lead-form webhook</strong><p><code>{origin}/api/webhooks/google-ads/leads</code></p><p>Requires <code>GOOGLE_ADS_LEAD_WEBHOOK_KEY</code> to match the key set on the Google lead form.</p></div>
-        <div className={styles.event}><strong>Meta Lead Ads webhook</strong><p><code>{origin}/api/webhooks/meta-leads</code></p><p>Subscribe the Meta app to the Page <code>leadgen</code> event. Requires <code>META_LEAD_WEBHOOK_VERIFY_TOKEN</code>, <code>META_APP_SECRET</code>, and <code>META_LEADS_ACCESS_TOKEN</code> with lead retrieval access.</p></div>
+        <div className={styles.event}><strong>Meta Lead Ads webhook</strong><p><code>{origin}/api/webhooks/meta-leads</code></p><p>Subscribe the Meta app to the Page <code>leadgen</code> event. Requires <code>META_LEAD_WEBHOOK_VERIFY_TOKEN</code>, <code>META_APP_SECRET</code>, and a valid <code>META_LEADS_ACCESS_TOKEN</code> with Page access and <code>leads_retrieval</code>. For a System User token, set <code>META_BUSINESS_ID</code> or <code>META_LEAD_PAGE_ID</code> to target the owned Page.</p>
+          <button className="btn btn-outline" disabled={busy || !data.connections.find(item => item.name === 'meta-leads')?.configured || !data.databaseReady} onClick={() => void syncMetaLeads()}>{busy ? 'Importing Meta leads…' : metaLeadCursor ? 'Continue import' : 'Import existing Meta leads'}</button>
+          {metaLeadProgress && <p className={styles.muted} role="status">This run: {metaLeadProgress.imported} added; {metaLeadProgress.duplicates} already in CRM; {metaLeadProgress.skipped} skipped for missing contact details. Safe to retry: CRM deduplicates Meta lead IDs.</p>}
+        </div>
         <div className={styles.event}><strong>WhatsApp Click-to-Chat referrals</strong><p><code>{origin}/api/webhooks/whatsapp</code></p><p>Subscribe the WhatsApp Business Account to the <code>messages</code> webhook field. Inbound messages are captured; Meta Click-to-WhatsApp referrals keep their ad ID and referral details. New sender numbers become CRM leads automatically after the migration is applied.</p></div>
         <p>Meta and Google webhook receivers validate requests and deduplicate lead submissions. Campaign ID and form/ad details are kept with the CRM lead where the source provides them.</p>
       </section>
