@@ -735,13 +735,16 @@ export async function createCrmCommunication(
           : { messaging_product: 'whatsapp', recipient_type: 'individual', to: recipient, type: 'text', text: { preview_url: false, body } }),
         cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(15000),
       });
-      const result = await response.json().catch(() => null) as { messages?: Array<{ id?: string }>; error?: { code?: number; error_subcode?: number } } | null;
+      const result = await response.json().catch(() => null) as { messages?: Array<{ id?: string }>; error?: { code?: number; error_subcode?: number; message?: string } } | null;
       providerId = typeof result?.messages?.[0]?.id === 'string' ? result.messages[0].id : '';
       if (response.ok && providerId) { status = 'sent'; message = 'Accepted by WhatsApp; delivery is not confirmed until a delivery status arrives.'; }
       else if (response.status >= 400 && response.status < 500) {
         status = 'failed';
         const code = result?.error?.code;
-        message = code === 131047
+        const providerDetail = result?.error?.message?.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 220);
+        message = code === 100
+          ? `Meta reports an invalid parameter. Check that WHATSAPP_PHONE_NUMBER_ID is the Phone Number ID (not the WABA ID or phone number) and that WHATSAPP_GRAPH_VERSION is supported.${providerDetail ? ` Meta detail: ${providerDetail}` : ''}`
+          : code === 131047
           ? 'The 24-hour WhatsApp customer service window has expired. Send an approved template message, or ask the customer to message you first.'
           : code === 132000 || code === 132001 || code === 132015 || code === 132016
             ? 'WhatsApp could not use that template. Check that it is approved, active, and that its language matches the configured template.'
