@@ -735,7 +735,7 @@ export async function createCrmCommunication(
           : { messaging_product: 'whatsapp', recipient_type: 'individual', to: recipient, type: 'text', text: { preview_url: false, body } }),
         cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(15000),
       });
-      const result = await response.json().catch(() => null) as { messages?: Array<{ id?: string }>; error?: { code?: number; error_subcode?: number; message?: string } } | null;
+      const result = await response.json().catch(() => null) as { messages?: Array<{ id?: string }>; error?: { code?: number; error_subcode?: number; type?: string; message?: string; fbtrace_id?: string } } | null;
       providerId = typeof result?.messages?.[0]?.id === 'string' ? result.messages[0].id : '';
       if (response.ok && providerId) { status = 'sent'; message = 'Accepted by WhatsApp; delivery is not confirmed until a delivery status arrives.'; }
       else if (response.status >= 400 && response.status < 500) {
@@ -757,8 +757,8 @@ export async function createCrmCommunication(
                   : code === 190
                     ? 'The WhatsApp access token is invalid or expired. Generate a new token with WhatsApp messaging access and update the server environment.'
                     : code === 10 || code === 200
-                      ? 'The WhatsApp token lacks a required permission or asset assignment. Grant whatsapp_business_messaging to the system user and the correct phone number.'
-                      : `WhatsApp rejected the request (Meta error ${typeof code === 'number' ? code : 'unknown'}${typeof result?.error?.error_subcode === 'number' ? `/${result.error.error_subcode}` : ''}). Check the account, permissions, payment setup, and template status.`;
+                      ? `Meta permission error ${code}${typeof result?.error?.error_subcode === 'number' ? `/${result.error.error_subcode}` : ''}.${providerDetail ? ` Meta detail: ${providerDetail}` : ' Check whatsapp_business_messaging and the system user’s WhatsApp account/phone-number assignment.'}`
+                      : `WhatsApp rejected the request (Meta error ${typeof code === 'number' ? code : 'unknown'}${typeof result?.error?.error_subcode === 'number' ? `/${result.error.error_subcode}` : ''}).${providerDetail ? ` Meta detail: ${providerDetail}` : ' Check the account, permissions, payment setup, and template status.'}`;
       }
     } catch { /* Network failure after submission may be ambiguous. */ }
     const { error: finalizeError } = await db.rpc('crm_finish_whatsapp', { p_request_id: input.requestId, p_actor_id: viewer.userId, p_status: status, p_provider_id: providerId });
