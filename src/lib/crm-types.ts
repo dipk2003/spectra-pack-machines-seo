@@ -150,6 +150,7 @@ export type CrmWorkspace = {
   capabilities: {
     emailSending: boolean;
     whatsappSending: boolean;
+    whatsappTemplateSending: boolean;
     phoneCalling: boolean;
   };
   totalLeadCount: number;

@@ -9,8 +9,8 @@ const names: Record<string, string> = { google: 'Google Ads', meta: 'Meta Ads', 
 const setup: Record<string, string> = {
   google: 'Connect OAuth access from a Google Cloud project approved for Google Ads API access. The website AW tag alone cannot read spend.',
   meta: 'Connect an ad account with an access token permitted to read advertising insights. Add ads_management to the system-user token to let CRM owners pause or resume campaigns. A Pixel ID alone cannot read spend. Reading the account spending cap also needs ad account billing access.',
-  'meta-leads': 'Receive native Facebook and Instagram lead form submissions in the CRM. The Meta app must also subscribe its Page to the leadgen webhook event.',
-  whatsapp: 'Use the official WhatsApp Business Platform Cloud API. New inbound messages create CRM leads; a unique existing phone match is added to that lead, and duplicate phone matches remain for staff review.',
+  'meta-leads': 'Receive native Facebook and Instagram lead form submissions in the CRM. The Meta app must subscribe its Page to the leadgen webhook event and have the permissions needed to retrieve those leads.',
+  whatsapp: 'Use the official WhatsApp Business Platform Cloud API. New inbound messages create CRM leads; a unique existing phone match is added to that lead, and duplicate phone matches remain for staff review. CRM sends outside the 24-hour window need an approved Meta template and an active payment method.',
   twilio: 'No calling service is connected. This receiver supports provider call status and optional provider-generated transcripts; it does not start calls or record audio.',
 };
 const format = (value: number) => value.toLocaleString('en-IN', { maximumFractionDigits: 2 });

@@ -19,6 +19,7 @@ export default function CrmCommunications({
   lead,
   emailSending,
   whatsappSending,
+  whatsappTemplateSending,
   phoneCalling,
   onActivity,
   requestIds,
@@ -26,6 +27,7 @@ export default function CrmCommunications({
   lead: CrmLead;
   emailSending: boolean;
   whatsappSending: boolean;
+  whatsappTemplateSending: boolean;
   phoneCalling: boolean;
   onActivity: (activity: CrmActivity) => void;
   requestIds: Map<string, string>;
@@ -35,6 +37,7 @@ export default function CrmCommunications({
   const [body, setBody] = useState(`Hello ${lead.name}, thank you for your enquiry about ${lead.machineInterest || 'packaging machines'}. Could you share your product, pack size and required production capacity so we can help you choose a suitable machine?`);
   const [emailMode, setEmailMode] = useState<'app' | 'crm' | 'gmail' | 'outlook'>(emailSending ? 'crm' : 'gmail');
   const [whatsappMode, setWhatsappMode] = useState<'app' | 'crm'>(whatsappSending ? 'crm' : 'app');
+  const [whatsappMessageType, setWhatsappMessageType] = useState<'text' | 'template'>('text');
   const [template, setTemplate] = useState('requirements');
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
@@ -63,7 +66,7 @@ export default function CrmCommunications({
     event.preventDefault();
     if (busy) return;
     const action = (channel === 'email' && emailMode === 'crm') || (channel === 'call' && callMode === 'crm') || (channel === 'whatsapp' && whatsappMode === 'crm') ? 'send' : 'launch';
-    const fingerprint = channel === 'call' && action === 'send' ? callFingerprint : JSON.stringify({ leadId: lead.id, recipient: channel === 'email' ? lead.email : lead.phone, channel, action, subject, body });
+    const fingerprint = channel === 'call' && action === 'send' ? callFingerprint : JSON.stringify({ leadId: lead.id, recipient: channel === 'email' ? lead.email : lead.phone, channel, action, subject, body, whatsappMessageType });
     // The page owns these IDs so switching channels or reopening a lead cannot
     // turn a retry of an uncertain email into a second SMTP submission.
     let requestId = action === 'send' ? requestIds.get(fingerprint) : undefined;
@@ -83,7 +86,7 @@ export default function CrmCommunications({
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channel, action, subject, body, requestId }),
+        body: JSON.stringify({ channel, action, subject, body, requestId, whatsappMessageType }),
       });
       const result = await response.json().catch(() => null) as (CommunicationResult & { error?: string }) | null;
       if (response.status === 401) {
@@ -100,7 +103,7 @@ export default function CrmCommunications({
       } else if (action === 'send' && channel === 'whatsapp') {
         setNotice(result.notice || (result.status === 'sent' ? 'Accepted by WhatsApp; delivery is not confirmed yet.' : 'Check WhatsApp and the CRM activity before retrying.'));
         if (result.status === 'sent') toast.success('WhatsApp accepted by provider');
-        else if (result.status === 'failed') { requestIds.delete(fingerprint); toast.error('WhatsApp message was rejected'); }
+        else if (result.status === 'failed') { requestIds.delete(fingerprint); toast.error(result.notice || 'WhatsApp message was rejected'); }
         else toast('WhatsApp result needs checking', { icon: '⚠️' });
       } else if (action === 'send') {
         setNotice(result.notice || (result.status === 'accepted' ? 'Accepted by the email server. Delivery is not confirmed.' : 'The email result is not confirmed. Check the activity history before starting another email.'));
@@ -155,6 +158,7 @@ export default function CrmCommunications({
           {!phoneCalling && <p className={styles.inlineWarning}>CRM calling needs a connected Plivo account and your registered callback mobile. Contact the administrator to activate it.</p>}
         </>}
         {channel === 'whatsapp' && <label><span>Send using</span><select value={whatsappMode} onChange={(event) => { setWhatsappMode(event.target.value as typeof whatsappMode); setNotice(''); setLaunchUrl(''); }} disabled={busy}><option value="app">WhatsApp app with draft</option>{whatsappSending && <option value="crm">WhatsApp Cloud API</option>}</select></label>}
+        {channel === 'whatsapp' && whatsappMode === 'crm' && <label><span>WhatsApp message type</span><select value={whatsappMessageType} onChange={event => setWhatsappMessageType(event.target.value as 'text' | 'template')} disabled={busy}><option value="text">Free-form reply (24-hour window)</option><option value="template" disabled={!whatsappTemplateSending}>Approved template{whatsappTemplateSending ? '' : ' - awaiting template setup'}</option></select></label>}
         {channel !== 'call' && <>
           <label><span>Message template</span><select value={template} onChange={(event) => applyTemplate(event.target.value)} disabled={busy}><option value="requirements">Ask about requirements</option><option value="quotation">Enquiry follow-up</option><option value="demo">Arrange a discussion</option><option value="custom">Custom message</option></select></label>
           {channel === 'email' && <>
@@ -166,7 +170,7 @@ export default function CrmCommunications({
         <p className={styles.communicationHint}>{channel === 'call'
           ? callMode === 'crm' ? 'The CRM calls your registered mobile first. Answer to connect to this customer; provider call charges apply.' : 'Use your mobile or an installed calling app. On a desktop without a calling app, the dialer cannot place a call.'
           : channel === 'whatsapp'
-            ? whatsappMode === 'crm' ? 'Sends through WhatsApp Cloud API. Free-form replies require the customer service window; approved templates are required outside it.' : 'Opens WhatsApp with your draft. Review and send the message in WhatsApp.'
+            ? whatsappMode === 'crm' ? whatsappMessageType === 'template' ? 'Sends the configured approved WhatsApp template. The template is managed in Meta; the message draft above is not sent with a template.' : 'Sends a free-form reply through WhatsApp Cloud API. This only works within 24 hours of the customer’s last message.' : 'Opens WhatsApp with your draft. Review and send the message in WhatsApp.'
             : emailMode === 'crm'
               ? 'Sends this email through the configured company email server. Server acceptance does not confirm delivery.'
               : `Opens ${emailMode === 'gmail' ? 'Gmail' : emailMode === 'outlook' ? 'Outlook' : 'your email app'} with this draft. Review and send it there.`}</p>
