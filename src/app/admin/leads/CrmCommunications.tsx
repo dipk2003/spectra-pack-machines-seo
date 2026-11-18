@@ -38,7 +38,9 @@ export default function CrmCommunications({
   const [subject, setSubject] = useState(`Your ${lead.machineInterest || 'packaging machine'} enquiry — Spectra Pack`);
   const [body, setBody] = useState(`Hello ${lead.name}, thank you for your enquiry about ${lead.machineInterest || 'packaging machines'}. Could you share your product, pack size and required production capacity so we can help you choose a suitable machine?`);
   const [emailMode, setEmailMode] = useState<'app' | 'crm' | 'gmail' | 'outlook'>(emailSending ? 'crm' : 'gmail');
-  const [whatsappMode, setWhatsappMode] = useState<'app' | 'crm'>(whatsappSending ? 'crm' : 'app');
+  // Prefer the API only when a template is configured for leads outside the
+  // service window. Otherwise, let staff open WhatsApp with a safe draft.
+  const [whatsappMode, setWhatsappMode] = useState<'app' | 'crm'>(whatsappSending && whatsappTemplateSending ? 'crm' : 'app');
   const [whatsappMessageType, setWhatsappMessageType] = useState<'text' | 'template'>(whatsappTemplateSending ? 'template' : 'text');
   const [template, setTemplate] = useState('requirements');
   const [busy, setBusy] = useState(false);
