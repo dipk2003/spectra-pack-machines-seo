@@ -748,7 +748,7 @@ export async function createCrmCommunication(
           : code === 131047
           ? 'The 24-hour WhatsApp customer service window has expired. Send an approved template message, or ask the customer to message you first.'
           : code === 132000 || code === 132001 || code === 132015 || code === 132016
-            ? 'WhatsApp could not use that template. Check that it is approved, active, and that its language matches the configured template.'
+            ? `WhatsApp rejected the configured template (Meta error ${code}${typeof result?.error?.error_subcode === 'number' ? `/${result.error.error_subcode}` : ''}). Check that WHATSAPP_TEMPLATE_NAME and WHATSAPP_TEMPLATE_LANGUAGE exactly match an approved, active template.${providerDetail ? ` Meta detail: ${providerDetail}` : ''}`
             : code === 131030
               ? 'This recipient is not allowed for the current WhatsApp account. Check the number and, for a test number, add it as an allowed recipient.'
               : code === 131009 || code === 131026
