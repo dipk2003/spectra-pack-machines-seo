@@ -742,6 +742,7 @@ export async function createCrmCommunication(
         status = 'failed';
         const code = result?.error?.code;
         const providerDetail = result?.error?.message?.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 220);
+        const isPaidMessageAccountAccessError = /paid message account/i.test(providerDetail || '');
         message = code === 100
           ? `Meta reports an invalid parameter. Check that WHATSAPP_PHONE_NUMBER_ID is the Phone Number ID (not the WABA ID or phone number) and that WHATSAPP_GRAPH_VERSION is supported.${providerDetail ? ` Meta detail: ${providerDetail}` : ''}`
           : code === 131047
@@ -756,8 +757,10 @@ export async function createCrmCommunication(
                   ? 'WhatsApp account payment setup is incomplete. Add a valid payment method in WhatsApp Manager before starting business-initiated conversations.'
                   : code === 190
                     ? 'The WhatsApp access token is invalid or expired. Generate a new token with WhatsApp messaging access and update the server environment.'
-                    : code === 10 || code === 200
-                      ? `Meta permission error ${code}${typeof result?.error?.error_subcode === 'number' ? `/${result.error.error_subcode}` : ''}.${providerDetail ? ` Meta detail: ${providerDetail}` : ' Check whatsapp_business_messaging and the system user’s WhatsApp account/phone-number assignment.'}`
+          : code === 10 || code === 200
+            ? isPaidMessageAccountAccessError
+              ? `Meta denied access to the Paid Message Account. The WhatsApp token reached Meta, but the system user cannot access that billing/messaging account. In Meta Business Settings, grant PMAdsSync01 the Finance Editor role or the correct Paid Message Account access, then retry. No .env value change is indicated by this error.${providerDetail ? ` Meta detail: ${providerDetail}` : ''}`
+              : `Meta permission error ${code}${typeof result?.error?.error_subcode === 'number' ? `/${result.error.error_subcode}` : ''}.${providerDetail ? ` Meta detail: ${providerDetail}` : ' Check whatsapp_business_messaging and the system user\'s WhatsApp account/phone-number assignment.'}`
                       : `WhatsApp rejected the request (Meta error ${typeof code === 'number' ? code : 'unknown'}${typeof result?.error?.error_subcode === 'number' ? `/${result.error.error_subcode}` : ''}).${providerDetail ? ` Meta detail: ${providerDetail}` : ' Check the account, permissions, payment setup, and template status.'}`;
       }
     } catch { /* Network failure after submission may be ambiguous. */ }
