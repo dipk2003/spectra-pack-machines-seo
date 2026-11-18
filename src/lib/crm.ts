@@ -330,6 +330,7 @@ export async function getCrmWorkspace(viewer: CrmViewer, offset = 0): Promise<Cr
       // are checked by the webhook route itself.
       whatsappSending: Boolean(process.env.WHATSAPP_ACCESS_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID && /^v\d+\.\d+$/.test(process.env.WHATSAPP_GRAPH_VERSION || '')),
       whatsappTemplateSending: Boolean(process.env.WHATSAPP_TEMPLATE_NAME?.trim() && /^[a-z0-9_]+$/i.test(process.env.WHATSAPP_TEMPLATE_NAME.trim()) && /^[a-z]{2}(?:_[A-Z]{2})?$/.test(process.env.WHATSAPP_TEMPLATE_LANGUAGE || '')),
+      whatsappTemplateName: process.env.WHATSAPP_TEMPLATE_NAME?.trim() || null,
       phoneCalling: plivoConfiguration(viewer.email).configured,
     },
     totalLeadCount: total,
@@ -702,20 +703,21 @@ export async function createCrmCommunication(
     if (!process.env.WHATSAPP_ACCESS_TOKEN || !process.env.WHATSAPP_PHONE_NUMBER_ID || !/^v\d+\.\d+$/.test(process.env.WHATSAPP_GRAPH_VERSION || '')) {
       throw new CrmValidationError('WhatsApp Cloud API sending is not connected. Configure the server-side WhatsApp access token, phone number ID and Graph API version.');
     }
-    if (!body || !isCrmUuid(input.requestId)) throw new CrmValidationError('Add a message and valid request ID before sending.');
     const useTemplate = input.whatsappMessageType === 'template';
     const templateName = process.env.WHATSAPP_TEMPLATE_NAME?.trim() || '';
     const templateLanguage = process.env.WHATSAPP_TEMPLATE_LANGUAGE?.trim() || '';
+    if ((!useTemplate && !body) || !isCrmUuid(input.requestId)) throw new CrmValidationError('Add a message and valid request ID before sending.');
     if (useTemplate && (!/^[a-z0-9_]+$/i.test(templateName) || !/^[a-z]{2}(?:_[A-Z]{2})?$/.test(templateLanguage))) {
       throw new CrmValidationError('Approved WhatsApp template is not configured. Add WHATSAPP_TEMPLATE_NAME and WHATSAPP_TEMPLATE_LANGUAGE in the hosting environment, then redeploy.');
     }
+    const messageBody = useTemplate ? `[WhatsApp approved template: ${templateName}]` : body;
     const recipientMatch = launchUrl.match(/^https:\/\/wa\.me\/(\d+)\?/);
     const recipient = recipientMatch?.[1] || '';
     if (!recipient) throw new CrmValidationError('Add a valid phone number with country code first.');
     const db = getSupabaseAdmin();
     const { data: reservation, error: reserveError } = await db.rpc('crm_reserve_whatsapp', {
       p_request_id: input.requestId, p_lead_id: leadId, p_actor_id: viewer.userId,
-      p_owner_access: viewer.canViewAllLeads, p_recipient: recipient, p_body: body,
+      p_owner_access: viewer.canViewAllLeads, p_recipient: recipient, p_body: messageBody,
     });
     if (reserveError) throwDatabaseError(reserveError);
     const reserved = reservation as { created: boolean; status: 'reserved' | 'sent' | 'failed' | 'uncertain'; provider_id: string | null };
@@ -747,12 +749,18 @@ export async function createCrmCommunication(
               ? 'This recipient is not allowed for the current WhatsApp account. Check the number and, for a test number, add it as an allowed recipient.'
               : code === 131009 || code === 131026
                 ? 'WhatsApp could not deliver to this number. Check the country code, account registration, and recipient eligibility.'
-                : 'WhatsApp rejected the request. Check the Cloud API token, phone number ID, permissions, payment setup, and template status.';
+                : code === 131042
+                  ? 'WhatsApp account payment setup is incomplete. Add a valid payment method in WhatsApp Manager before starting business-initiated conversations.'
+                  : code === 190
+                    ? 'The WhatsApp access token is invalid or expired. Generate a new token with WhatsApp messaging access and update the server environment.'
+                    : code === 10 || code === 200
+                      ? 'The WhatsApp token lacks a required permission or asset assignment. Grant whatsapp_business_messaging to the system user and the correct phone number.'
+                      : `WhatsApp rejected the request (Meta error ${typeof code === 'number' ? code : 'unknown'}${typeof result?.error?.error_subcode === 'number' ? `/${result.error.error_subcode}` : ''}). Check the account, permissions, payment setup, and template status.`;
       }
     } catch { /* Network failure after submission may be ambiguous. */ }
     const { error: finalizeError } = await db.rpc('crm_finish_whatsapp', { p_request_id: input.requestId, p_actor_id: viewer.userId, p_status: status, p_provider_id: providerId });
     const activity = await recordCrmActivity(viewer, leadId, {
-      activityType: 'whatsapp', body,
+      activityType: 'whatsapp', body: messageBody,
       outcome: status === 'sent' ? 'WhatsApp accepted by provider; delivery pending.' : status === 'failed' ? 'WhatsApp provider rejected message.' : 'WhatsApp send result uncertain; check before retrying.',
       metadata: { channel: 'whatsapp', provider: 'whatsapp_cloud_api', messageType: useTemplate ? 'template' : 'text', status: finalizeError ? 'uncertain' : status, externalMessageId: providerId, requestId: input.requestId, contactConfirmed: false },
     });

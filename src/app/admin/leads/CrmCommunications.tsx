@@ -20,6 +20,7 @@ export default function CrmCommunications({
   emailSending,
   whatsappSending,
   whatsappTemplateSending,
+  whatsappTemplateName,
   phoneCalling,
   onActivity,
   requestIds,
@@ -28,6 +29,7 @@ export default function CrmCommunications({
   emailSending: boolean;
   whatsappSending: boolean;
   whatsappTemplateSending: boolean;
+  whatsappTemplateName: string | null;
   phoneCalling: boolean;
   onActivity: (activity: CrmActivity) => void;
   requestIds: Map<string, string>;
@@ -37,7 +39,7 @@ export default function CrmCommunications({
   const [body, setBody] = useState(`Hello ${lead.name}, thank you for your enquiry about ${lead.machineInterest || 'packaging machines'}. Could you share your product, pack size and required production capacity so we can help you choose a suitable machine?`);
   const [emailMode, setEmailMode] = useState<'app' | 'crm' | 'gmail' | 'outlook'>(emailSending ? 'crm' : 'gmail');
   const [whatsappMode, setWhatsappMode] = useState<'app' | 'crm'>(whatsappSending ? 'crm' : 'app');
-  const [whatsappMessageType, setWhatsappMessageType] = useState<'text' | 'template'>('text');
+  const [whatsappMessageType, setWhatsappMessageType] = useState<'text' | 'template'>(whatsappTemplateSending ? 'template' : 'text');
   const [template, setTemplate] = useState('requirements');
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
@@ -159,7 +161,8 @@ export default function CrmCommunications({
         </>}
         {channel === 'whatsapp' && <label><span>Send using</span><select value={whatsappMode} onChange={(event) => { setWhatsappMode(event.target.value as typeof whatsappMode); setNotice(''); setLaunchUrl(''); }} disabled={busy}><option value="app">WhatsApp app with draft</option>{whatsappSending && <option value="crm">WhatsApp Cloud API</option>}</select></label>}
         {channel === 'whatsapp' && whatsappMode === 'crm' && <label><span>WhatsApp message type</span><select value={whatsappMessageType} onChange={event => setWhatsappMessageType(event.target.value as 'text' | 'template')} disabled={busy}><option value="text">Free-form reply (24-hour window)</option><option value="template" disabled={!whatsappTemplateSending}>Approved template{whatsappTemplateSending ? '' : ' - awaiting template setup'}</option></select></label>}
-        {channel !== 'call' && <>
+        {channel === 'whatsapp' && whatsappMode === 'crm' && whatsappMessageType === 'template' && <p className={styles.communicationHint}>Using approved template <code>{whatsappTemplateName || 'not configured'}</code>. Meta supplies the template text; the editable draft is not sent.</p>}
+        {channel !== 'call' && !(channel === 'whatsapp' && whatsappMode === 'crm' && whatsappMessageType === 'template') && <>
           <label><span>Message template</span><select value={template} onChange={(event) => applyTemplate(event.target.value)} disabled={busy}><option value="requirements">Ask about requirements</option><option value="quotation">Enquiry follow-up</option><option value="demo">Arrange a discussion</option><option value="custom">Custom message</option></select></label>
           {channel === 'email' && <>
             <label><span>Send using</span><select value={emailMode} onChange={(event) => { setEmailMode(event.target.value as typeof emailMode); setNotice(''); setLaunchUrl(''); }} disabled={busy}><option value="gmail">Gmail in browser</option><option value="outlook">Outlook in browser</option><option value="app">My email app</option>{emailSending && <option value="crm">CRM email server</option>}</select></label>
@@ -170,7 +173,7 @@ export default function CrmCommunications({
         <p className={styles.communicationHint}>{channel === 'call'
           ? callMode === 'crm' ? 'The CRM calls your registered mobile first. Answer to connect to this customer; provider call charges apply.' : 'Use your mobile or an installed calling app. On a desktop without a calling app, the dialer cannot place a call.'
           : channel === 'whatsapp'
-            ? whatsappMode === 'crm' ? whatsappMessageType === 'template' ? 'Sends the configured approved WhatsApp template. The template is managed in Meta; the message draft above is not sent with a template.' : 'Sends a free-form reply through WhatsApp Cloud API. This only works within 24 hours of the customer’s last message.' : 'Opens WhatsApp with your draft. Review and send the message in WhatsApp.'
+            ? whatsappMode === 'crm' ? whatsappMessageType === 'template' ? 'Sends the configured WhatsApp template. It must be approved and active in Meta; business-initiated messaging also needs account payment setup.' : 'Sends a free-form reply through WhatsApp Cloud API. This only works within 24 hours of the customer’s last message.' : 'Opens WhatsApp with your draft. Review and send the message in WhatsApp.'
             : emailMode === 'crm'
               ? 'Sends this email through the configured company email server. Server acceptance does not confirm delivery.'
               : `Opens ${emailMode === 'gmail' ? 'Gmail' : emailMode === 'outlook' ? 'Outlook' : 'your email app'} with this draft. Review and send it there.`}</p>

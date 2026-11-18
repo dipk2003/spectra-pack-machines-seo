@@ -151,6 +151,7 @@ export type CrmWorkspace = {
     emailSending: boolean;
     whatsappSending: boolean;
     whatsappTemplateSending: boolean;
+    whatsappTemplateName: string | null;
     phoneCalling: boolean;
   };
   totalLeadCount: number;
