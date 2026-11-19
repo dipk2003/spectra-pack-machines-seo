@@ -89,6 +89,13 @@ export default function RootLayout({
     <html lang="en-IN">
       <head>
         <script
+          id="sa-dynamic-optimization"
+          type="text/javascript"
+          data-uuid="a8e94658-2172-47cd-a3cc-bb0026d27886"
+          src="https://dashboard.searchatlas.com/scripts/dynamic_optimization.js"
+          {...({ nowprocket: '', 'nitro-exclude': '' } as React.ScriptHTMLAttributes<HTMLScriptElement>)}
+        />
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
