@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import dynamic from 'next/dynamic';
+import Script from 'next/script';
 import { headers } from 'next/headers';
 import { Manrope, Sora } from 'next/font/google';
 import './globals.css';
@@ -88,11 +89,12 @@ export default function RootLayout({
   return (
     <html lang="en-IN">
       <head>
-        <script
+        <Script
           id="sa-dynamic-optimization"
           type="text/javascript"
           data-uuid="a8e94658-2172-47cd-a3cc-bb0026d27886"
           src="https://dashboard.searchatlas.com/scripts/dynamic_optimization.js"
+          strategy="afterInteractive"
           {...({ nowprocket: '', 'nitro-exclude': '' } as React.ScriptHTMLAttributes<HTMLScriptElement>)}
         />
         <script
