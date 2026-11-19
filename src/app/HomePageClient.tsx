@@ -249,6 +249,33 @@ export default function HomePageClient({
                 systems, conveyors and pallet stretch wrappers. Share your product, pack size and required
                 output for a configuration-specific quotation and delivery discussion.
               </p>
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '1rem 1.5rem',
+                  marginTop: '1.5rem',
+                }}
+              >
+                <Link
+                  href="/contact"
+                  className="btn btn-primary"
+                  onClick={() =>
+                    trackAnalyticsEvent('quotation_form_started', {
+                      surface: 'homepage-hero-quote',
+                      metadata: { cta_label: 'Get a machine quote' },
+                    })
+                  }
+                >
+                  Get a machine quote
+                </Link>
+                <p style={{ margin: 0, maxWidth: '38rem' }}>
+                  Over two decades manufacturing packaging machinery | Shrink wrapping, sealing, vacuum
+                  packaging and conveyors | Commissioning and after-sales support
+                </p>
+              </div>
             </div>
           </AnimatedSection>
 
