@@ -46,8 +46,12 @@ export const buildAbsoluteSeoTitle = (value: string, fallback: string) => {
   return `${base}${suffix}`;
 };
 
-export const buildMetaDescription = (value: string, fallback: string) =>
-  truncateAtWord(removeBrandMentions(value) || removeBrandMentions(fallback) || COMPANY_INFO.tagline, 160);
+type MetaDescriptionOptions = { keepBrand?: boolean; maxLength?: number };
+
+export const buildMetaDescription = (value: string, fallback: string, options: MetaDescriptionOptions = {}) => {
+  const clean = options.keepBrand ? (text: string) => text.replace(/\s+/g, ' ').trim() : removeBrandMentions;
+  return truncateAtWord(clean(value) || clean(fallback) || COMPANY_INFO.tagline, options.maxLength ?? 160);
+};
 
 export const canonicalizeProductSlug = (value: string) =>
   LEGACY_PRODUCT_SLUGS[value] || value;
@@ -75,14 +79,14 @@ export function machineSearchKeywords(title: string, category: string, city?: st
 }
 
 /** Complete page metadata without inheriting another page's social preview. */
-export function completePageMetadata(input: Metadata): Metadata {
+export function completePageMetadata(input: Metadata, descriptionOptions: MetaDescriptionOptions = {}): Metadata {
   const rawTitle = typeof input.title === 'string' ? input.title
     : input.title && 'absolute' in input.title ? input.title.absolute
     : input.title && 'default' in input.title ? input.title.default : COMPANY_INFO.name;
   // Preserve the complete machine/location name; truncating long titles can make
   // different models or cities indistinguishable. Google chooses display length.
   const title = stripSeoBrandSuffix(rawTitle || COMPANY_INFO.name) || 'Packaging Machinery';
-  const description = buildMetaDescription(input.description || '', COMPANY_INFO.tagline);
+  const description = buildMetaDescription(input.description || '', COMPANY_INFO.tagline, descriptionOptions);
   const canonical = input.alternates?.canonical;
   const url = typeof canonical === 'string' ? new URL(canonical, COMPANY_INFO.website).href.replace(/\/$/, '') : COMPANY_INFO.website;
   const og = input.openGraph;
@@ -100,7 +104,7 @@ export function completePageMetadata(input: Metadata): Metadata {
     keywords,
     alternates: { ...input.alternates, canonical: url },
     robots: input.robots || { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 } },
-    openGraph: { type: 'website', locale: 'en_IN', siteName: COMPANY_INFO.name, ...og, title: buildAbsoluteSeoTitle(openGraphTitle, title), description: buildMetaDescription(og?.description || description, description), url, images },
-    twitter: { card: 'summary_large_image', ...input.twitter, title: buildAbsoluteSeoTitle(twitterTitle, title), description: buildMetaDescription(input.twitter?.description || description, description), images: input.twitter?.images || images },
+    openGraph: { type: 'website', locale: 'en_IN', siteName: COMPANY_INFO.name, ...og, title: buildAbsoluteSeoTitle(openGraphTitle, title), description: buildMetaDescription(og?.description || description, description, descriptionOptions), url, images },
+    twitter: { card: 'summary_large_image', ...input.twitter, title: buildAbsoluteSeoTitle(twitterTitle, title), description: buildMetaDescription(input.twitter?.description || description, description, descriptionOptions), images: input.twitter?.images || images },
   };
 }

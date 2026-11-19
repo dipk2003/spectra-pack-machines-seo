@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = completePageMetadata({
   title: { absolute: 'Packaging Machine Manufacturer in India | Spectra Pack Machines' },
   description:
-    'Spectra Pack Machines manufactures shrink wrapping, sealing, vacuum packaging, conveyor and pallet stretch wrapping machines with pan-India supply and support.',
+    'Spectra Pack Machines manufactures shrink wrapping, sealing, vacuum packaging, conveyor and pallet stretch wrapping machines in Mumbai, with pan-India supply and support.',
   keywords: [
     'packaging machine manufacturer in India',
     'packing machine',
@@ -24,7 +24,7 @@ export const metadata: Metadata = completePageMetadata({
     'pallet stretch wrapping machine',
   ],
   alternates: { canonical: '/' },
-});
+}, { keepBrand: true, maxLength: 175 });
 
 const getHomePageData = async () => {
   try {
