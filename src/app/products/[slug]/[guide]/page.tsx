@@ -14,8 +14,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!isModelGuideTopic(params.guide) || !MODEL_GUIDE_PROFILES[params.slug]) return {};
   const product = await getProductBySlug(params.slug, { publishedOnly: true });
   if (!product) return {};
+  const guideMetadata = modelGuideMetadata(product, params.guide);
+  const isTrialChecklist = params.guide === 'trial-checklist';
+  const isDoubleDoorVacuum = product.slug === 'double-door-chamber-vacuum-machine-with-conveyor';
   return completePageMetadata({
-    ...modelGuideMetadata(product, params.guide),
+    ...guideMetadata,
+    title: isTrialChecklist && isDoubleDoorVacuum
+      ? 'Double Door Vacuum Machine Trial Checklist | Spectra Pack Machines'
+      : guideMetadata.title,
     alternates: { canonical: modelGuideHref(product.slug, params.guide) },
     openGraph: { images: product.image ? [{ url: product.image, alt: product.imageAlt || product.title }] : [] },
   });
@@ -53,7 +59,7 @@ export default async function ModelGuidePage({ params }: Props) {
     <header className="section"><div className="container">
       <nav aria-label="Breadcrumb"><Link href="/machines">Machines</Link> / <Link href={`/products/${product.slug}`}>{product.title}</Link> / {buying ? 'Buying guide' : 'Trial checklist'}</nav>
       <p className="section-label">{product.modelNo ? `Model ${product.modelNo}` : product.category}</p>
-      <h1>{metadata.title}</h1>
+      <h1>{modelGuideMetadata(product, params.guide).title}</h1>
       <p className={styles.intro}>{buying ? profile.focus : `Use this checklist when evaluating ${product.title}${product.modelNo ? ` (${product.modelNo})` : ''}. Agree the materials, operating configuration and acceptance criteria before the demonstration so results can be compared with your production requirement.`}</p>
       <nav aria-label="Model resources" className={styles.links}>
         <Link href={`/products/${product.slug}`}>Machine specifications</Link>
