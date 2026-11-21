@@ -84,6 +84,10 @@ export async function generateStaticParams() {
   return entries.map((entry) => ({ slug: entry.slug }));
 }
 
+const SEO_TITLE_OVERRIDES: Record<string, string> = {
+  'shrink-wrapping-machines': 'Shrink Wrapping Machines for Bottles and Cartons',
+};
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const [products, categories] = await Promise.all([
     listProducts({ publishedOnly: true }),
@@ -94,16 +98,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!category) return {};
 
+  const seoTitle = SEO_TITLE_OVERRIDES[category.slug] || category.name;
+
   const categoryDescription = `Compare ${category.name.toLowerCase()} models, specifications and listed applications. Share product dimensions and output needs to discuss a suitable machine configuration and quotation.`;
 
   return completePageMetadata({
     keywords: [category.name, `${category.name} manufacturer India`, `${category.name} supplier`, ...category.items.slice(0, 5).map(product => product.title)],
-    title: category.name,
+    title: seoTitle,
     description: categoryDescription,
     alternates: { canonical: `/products/category/${category.slug}` },
     robots: { index: category.items.length > 0, follow: true },
     openGraph: {
-      title: `${category.name} | Spectra Pack Machines`,
+      title: `${seoTitle} | Spectra Pack Machines`,
       description: categoryDescription,
       url: `/products/category/${category.slug}`,
       type: 'website',
@@ -113,7 +119,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
-      title: category.name,
+      title: seoTitle,
       description: categoryDescription,
       images: category.image ? [category.image] : [],
     },
