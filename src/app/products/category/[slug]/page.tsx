@@ -29,7 +29,7 @@ const CATEGORY_META_DESCRIPTIONS: Record<string, string> = {
   'automatic-web-sealer-with-shrink-tunnel-bottles':
     'Compare automatic bottle web sealers with shrink tunnels for water and beverage bundles. Discuss bottle sizes, pack patterns, line speed and a quotation.',
   'automatic-web-sealer-with-shrink-tunnel-machines':
-    'Explore automatic web sealers with shrink tunnels for grouped packs. Compare machine configurations, product sizes and output before requesting a quote.',
+    'Compare automatic web sealers with shrink tunnels for boxes and cartons. Review pack sizes, conveyor flow and output, then request a machine quotation.',
   'pallet-stretch-wrapping-machines':
     'Compare pallet stretch wrapping machines for warehouse and dispatch loads. Review pallet sizes, load handling and wrapping needs, then request a quote.',
 };
