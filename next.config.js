@@ -140,6 +140,19 @@ const nextConfig = {
         destination: '/products/category/vacuum-packaging-machines',
         permanent: true,
       },
+      // Old product slugs that Search Console reports as 404 (Nov 2026).
+      // Each one points to the live page for the same machine.
+      { source: '/products/chamber-shrink-tunnel', destination: '/products/shrink-tunnel-machine', permanent: true },
+      { source: '/products/l-sealer-with-shrink-tunnel-machine-indian', destination: '/products/l-sealer-with-shrink-tunnel-machine', permanent: true },
+      { source: '/products/fully-automatic-l-sealer-with-shrink-tunnel-machine', destination: '/products/l-sealer-with-shrink-tunnel-machine', permanent: true },
+      { source: '/products/category/shrink-tunnel-machine', destination: '/products/category/heavy-duty-shrink-tunnel-machines', permanent: true },
+      { source: '/products/master-horizontal-band-sealer', destination: '/products/horizontal-band-sealer-master-model', permanent: true },
+      { source: '/products/pallet-stretch-wrapping-machine', destination: '/products/pallet-stretch-wrapping', permanent: true },
+      { source: '/products/heavy-duty-slate-chain-conveyor', destination: '/products/heavy-duty-slat-chain-conveyor', permanent: true },
+      { source: '/products/u-type-slate-conveyor', destination: '/products/u-type-slat-conveyor', permanent: true },
+      { source: '/:city/chamber-shrink-tunnel', destination: '/:city/shrink-tunnel-machine', permanent: true },
+      { source: '/:city/l-sealer-with-shrink-tunnel-machine-indian', destination: '/:city/l-sealer-with-shrink-tunnel-machine', permanent: true },
+      { source: '/:city/fully-automatic-l-sealer-with-shrink-tunnel-machine', destination: '/:city/l-sealer-with-shrink-tunnel-machine', permanent: true },
     ];
   },
   async headers() {
