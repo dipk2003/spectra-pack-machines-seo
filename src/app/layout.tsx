@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     default: `${COMPANY_INFO.name} | ${COMPANY_INFO.tagline}`,
     template: '%s | Spectra Pack Machines'
   },
-  description: 'Spectra Pack Machines manufactures shrink wrapping machines, sealing machines, vacuum packaging machines, conveyor systems, and pallet stretch wrapping solutions in India.',
+  description: 'Spectra Pack Machines manufactures shrink wrapping, sealing, vacuum packaging, filling and conveyor systems in Mumbai, with supply and support across India.',
   keywords: ['packaging machine manufacturer in India', 'packing machine', 'Spectra Pack Machine', 'spectrapackmachine', 'shrink wrapping machine', 'sealing machine', 'band sealer machine', 'vacuum packaging machine', 'web sealer with shrink tunnel', 'conveyor systems', 'pallet stretch wrap machine'],
   authors: [{ name: 'Spectra Pack Machines' }],
   creator: COMPANY_INFO.name,
@@ -98,106 +98,110 @@ export default function RootLayout({
           {...({ nowprocket: '', 'nitro-exclude': '' } as React.ScriptHTMLAttributes<HTMLScriptElement>)}
         />
         <script
+          id="organization-jsonld"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',
-              '@graph': [
+              '@type': 'Organization',
+              '@id': `${COMPANY_INFO.website}/#organization`,
+              name: COMPANY_INFO.name,
+              legalName: COMPANY_INFO.legalName,
+              url: COMPANY_INFO.website,
+              logo: {
+                '@type': 'ImageObject',
+                url: `${COMPANY_INFO.website}${COMPANY_INFO.logoPath}`,
+                width: 1632,
+                height: 607,
+              },
+              image: `${COMPANY_INFO.website}${COMPANY_INFO.logoPath}`,
+              description: 'Manufacturer of shrink wrapping, sealing, vacuum packaging, conveyor, and end-of-line packaging machines in India.',
+              address: [
                 {
-                  '@type': 'Organization',
-                  '@id': `${COMPANY_INFO.website}/#organization`,
-                  name: COMPANY_INFO.name,
-                  legalName: COMPANY_INFO.legalName,
-                  url: COMPANY_INFO.website,
-                  logo: {
-                    '@type': 'ImageObject',
-                    url: `${COMPANY_INFO.website}${COMPANY_INFO.logoPath}`,
-                    width: 1632,
-                    height: 607,
-                  },
-                  image: `${COMPANY_INFO.website}${COMPANY_INFO.logoPath}`,
-                  description: 'Manufacturer of shrink wrapping, sealing, vacuum packaging, conveyor, and end-of-line packaging machines in India.',
-                  address: [
-                    {
-                      '@type': 'PostalAddress',
-                      streetAddress: '505, Dattani Prism 1, Above Janseva Hospital, Behind Dattani Mall',
-                      addressLocality: 'Vasai West',
-                      addressRegion: 'Maharashtra',
-                      postalCode: '401207',
-                      addressCountry: 'IN',
-                    },
-                    {
-                      '@type': 'PostalAddress',
-                      streetAddress: 'Ground Floor, Gala No-11, Royal I.T. Industrial Estate, Saaghpada, Chinchoti, Kaman',
-                      addressLocality: 'Vasai East',
-                      addressRegion: 'Maharashtra',
-                      postalCode: '401208',
-                      addressCountry: 'IN',
-                    },
-                  ],
-                  location: [
-                    {
-                      '@type': 'LocalBusiness',
-                      '@id': `${COMPANY_INFO.website}/#head-office`,
-                      name: `${COMPANY_INFO.name} – Head Office`,
-                      url: `${COMPANY_INFO.website}/contact`,
-                      telephone: COMPANY_INFO.phone[0],
-                      address: {
-                        '@type': 'PostalAddress',
-                        streetAddress: '505, Dattani Prism 1, Above Janseva Hospital, Behind Dattani Mall',
-                        addressLocality: 'Vasai West',
-                        addressRegion: 'Maharashtra',
-                        postalCode: '401207',
-                        addressCountry: 'IN',
-                      },
-                      parentOrganization: { '@id': `${COMPANY_INFO.website}/#organization` },
-                    },
-                    {
-                      '@type': 'LocalBusiness',
-                      '@id': `${COMPANY_INFO.website}/#factory`,
-                      name: COMPANY_INFO.name,
-                      url: `${COMPANY_INFO.website}/contact`,
-                      telephone: COMPANY_INFO.phone[0],
-                      address: {
-                        '@type': 'PostalAddress',
-                        streetAddress: 'Ground Floor, Gala No-11, Royal I.T. Industrial Estate, Saaghpada, Chinchoti, Kaman',
-                        addressLocality: 'Vasai East',
-                        addressRegion: 'Maharashtra',
-                        postalCode: '401208',
-                        addressCountry: 'IN',
-                      },
-                      parentOrganization: { '@id': `${COMPANY_INFO.website}/#organization` },
-                    },
-                  ],
-                  telephone: COMPANY_INFO.phone[0],
-                  email: COMPANY_INFO.email[0],
-                  foundingDate: String(COMPANY_INFO.foundedYear),
-                  areaServed: SEO_CITY_MARKETS.map((city) => ({
-                    '@type': 'City',
-                    name: city.name,
-                    containedInPlace: city.region,
-                  })),
-                  knowsAbout: ['Packaging machines', 'Shrink wrapping machines', 'Sealing machines', 'Vacuum packaging machines', 'Conveyor systems', 'Pallet stretch wrapping machines'],
-                  sameAs: socialProfiles,
-                  contactPoint: {
-                    '@type': 'ContactPoint',
-                    telephone: COMPANY_INFO.phone[0],
-                    contactType: 'sales',
-                    areaServed: 'IN',
-                    availableLanguage: ['English', 'Hindi'],
-                  },
+                  '@type': 'PostalAddress',
+                  streetAddress: '505, Dattani Prism 1, Above Janseva Hospital, Behind Dattani Mall',
+                  addressLocality: 'Vasai West',
+                  addressRegion: 'Maharashtra',
+                  postalCode: '401207',
+                  addressCountry: 'IN',
                 },
                 {
-                  '@type': 'WebSite',
-                  '@id': `${COMPANY_INFO.website}/#website`,
-                  url: COMPANY_INFO.website,
-                  name: COMPANY_INFO.name,
-                  alternateName: 'Spectra Pack',
-                  inLanguage: 'en-IN',
-                  publisher: { '@id': `${COMPANY_INFO.website}/#organization` },
+                  '@type': 'PostalAddress',
+                  streetAddress: 'Ground Floor, Gala No-11, Royal I.T. Industrial Estate, Saaghpada, Chinchoti, Kaman',
+                  addressLocality: 'Vasai East',
+                  addressRegion: 'Maharashtra',
+                  postalCode: '401208',
+                  addressCountry: 'IN',
                 },
               ],
-            })
+              location: [
+                {
+                  '@type': 'LocalBusiness',
+                  '@id': `${COMPANY_INFO.website}/#head-office`,
+                  name: `${COMPANY_INFO.name} – Head Office`,
+                  url: `${COMPANY_INFO.website}/contact`,
+                  telephone: COMPANY_INFO.phone[0],
+                  address: {
+                    '@type': 'PostalAddress',
+                    streetAddress: '505, Dattani Prism 1, Above Janseva Hospital, Behind Dattani Mall',
+                    addressLocality: 'Vasai West',
+                    addressRegion: 'Maharashtra',
+                    postalCode: '401207',
+                    addressCountry: 'IN',
+                  },
+                  parentOrganization: { '@id': `${COMPANY_INFO.website}/#organization` },
+                },
+                {
+                  '@type': 'LocalBusiness',
+                  '@id': `${COMPANY_INFO.website}/#factory`,
+                  name: COMPANY_INFO.name,
+                  url: `${COMPANY_INFO.website}/contact`,
+                  telephone: COMPANY_INFO.phone[0],
+                  address: {
+                    '@type': 'PostalAddress',
+                    streetAddress: 'Ground Floor, Gala No-11, Royal I.T. Industrial Estate, Saaghpada, Chinchoti, Kaman',
+                    addressLocality: 'Vasai East',
+                    addressRegion: 'Maharashtra',
+                    postalCode: '401208',
+                    addressCountry: 'IN',
+                  },
+                  parentOrganization: { '@id': `${COMPANY_INFO.website}/#organization` },
+                },
+              ],
+              telephone: COMPANY_INFO.phone[0],
+              email: COMPANY_INFO.email[0],
+              foundingDate: String(COMPANY_INFO.foundedYear),
+              areaServed: SEO_CITY_MARKETS.map((city) => ({
+                '@type': 'City',
+                name: city.name,
+                containedInPlace: city.region,
+              })),
+              knowsAbout: ['Packaging machines', 'Shrink wrapping machines', 'Sealing machines', 'Vacuum packaging machines', 'Conveyor systems', 'Pallet stretch wrapping machines'],
+              sameAs: socialProfiles,
+              contactPoint: {
+                '@type': 'ContactPoint',
+                telephone: COMPANY_INFO.phone[0],
+                contactType: 'sales',
+                areaServed: 'IN',
+                availableLanguage: ['English', 'Hindi'],
+              },
+            }).replace(/</g, '\\u003c')
+          }}
+        />
+        <script
+          id="website-jsonld"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              '@id': `${COMPANY_INFO.website}/#website`,
+              url: COMPANY_INFO.website,
+              name: COMPANY_INFO.name,
+              alternateName: 'Spectra Pack',
+              inLanguage: 'en-IN',
+              publisher: { '@id': `${COMPANY_INFO.website}/#organization` },
+            }).replace(/</g, '\\u003c')
           }}
         />
       </head>

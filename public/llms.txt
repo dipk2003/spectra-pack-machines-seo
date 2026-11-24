@@ -1,0 +1,44 @@
+# Spectra Pack Machines
+
+> Spectra Pack Machines is an industrial packaging machinery manufacturer based in the Mumbai region of Maharashtra, India, with a head office in Vasai West and a manufacturing facility in Vasai East, Palghar. The website provides machine information, buying guides, installation and service information, and quotation enquiries for customers across India.
+
+Start with the machine catalog to find equipment for a product and packaging format. Product pages describe the offered configurations; confirm application suitability, output, pricing, delivery, warranty and service scope with the company using the buyer's actual product and container. City pages describe supply and service planning, and do not imply a separate local factory or office.
+
+## Company and enquiries
+
+- [Home](https://spectrapackmachines.com/): Company overview and packaging solutions.
+- [About](https://spectrapackmachines.com/about): Company background and manufacturing infrastructure.
+- [Contact](https://spectrapackmachines.com/contact): Sales enquiries, contact details and office and factory addresses.
+- [Schedule a meeting](https://spectrapackmachines.com/schedule-meeting): Discuss a machine application or packaging line requirement.
+
+## Machines and categories
+
+- [Machine catalog](https://spectrapackmachines.com/machines): Browse machines and compare packaging applications.
+- [Shrink wrapping machines](https://spectrapackmachines.com/products/category/shrink-wrapping-machines): Shrink tunnels, L-sealers and bottle and carton wrapping systems.
+- [Sealing machines](https://spectrapackmachines.com/products/category/sealing-machines): Pouch, bag and continuous sealing equipment.
+- [Vacuum packaging machines](https://spectrapackmachines.com/products/category/vacuum-packaging-machines): Vacuum packing equipment and configurations.
+- [Conveyor systems](https://spectrapackmachines.com/products/category/conveyor-systems): Product transfer and packaging line conveyors.
+- [Pallet stretch wrapping machines](https://spectrapackmachines.com/products/category/pallet-stretch-wrapping-machines): Pallet wrapping equipment for dispatch loads.
+- [End-of-line packaging](https://spectrapackmachines.com/products/category/end-of-line-packaging): Packaging equipment for downstream handling and dispatch.
+
+## Services and locations
+
+- [Services](https://spectrapackmachines.com/services): Manufacturing, machine selection, custom design, installation and after-sales support.
+- [Locations](https://spectrapackmachines.com/locations): Location-based entry points for machine enquiries.
+- [Packaging machines by location](https://spectrapackmachines.com/packaging-machines): Indian markets and regional supply planning.
+- [Pune packaging machines](https://spectrapackmachines.com/packaging-machines/pune): Machine selection and supply planning for Pune.
+
+## Buying and operating guides
+
+- [Blog](https://spectrapackmachines.com/blog): Packaging machine buying, setup and operating guides.
+- [Liquid filling machine manufacturers for Pune](https://spectrapackmachines.com/blog/best-automatic-liquid-filling-machine-manufacturer-in-pune): Compare suppliers by product fit, confirmed output, automation, service and warranty.
+- [Machine selection, capacity and cost](https://spectrapackmachines.com/blog/packaging-machine-selection-cost-capacity-guide): Prepare application details and compare machine quotations.
+- [Packaging line layout and conveyors](https://spectrapackmachines.com/blog/custom-packaging-line-layout-conveyor-guide): Plan equipment interfaces and product flow.
+- [Installation acceptance checklist](https://spectrapackmachines.com/blog/packaging-machine-installation-acceptance-checklist): Prepare a product trial and commissioning criteria.
+
+## Optional
+
+- [International enquiries](https://spectrapackmachines.com/packaging-machines/international): Export enquiry and destination planning.
+- [Privacy policy](https://spectrapackmachines.com/privacy-policy): Website data handling information.
+- [Sitemap](https://spectrapackmachines.com/sitemap.xml): Full index of public canonical URLs.
+- [Robots](https://spectrapackmachines.com/robots.txt): Crawler access rules.

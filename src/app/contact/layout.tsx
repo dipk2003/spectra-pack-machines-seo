@@ -4,11 +4,10 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = completePageMetadata({
   title: 'Contact & Packaging Machine Quote',
   description:
-    'Contact Spectra Pack Machines for machine recommendations, quotations, factory discussions, installation guidance, and pan-India packaging equipment support.',
+    'Contact Spectra Pack Machines for packaging machine quotes, application advice and service. Share your product, required output and delivery location.',
   alternates: { canonical: '/contact' },
   openGraph: {
     title: 'Contact Spectra Pack Machines',
-    description: 'Share your product, output, and delivery location for a practical packaging machine recommendation.',
     url: '/contact',
   },
 });

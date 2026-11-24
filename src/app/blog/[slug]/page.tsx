@@ -34,9 +34,10 @@ interface Props {
   params: { slug: string };
 }
 type ArticleBlock =
-  | { type: 'heading'; text: string }
+  | { type: 'heading'; text: string; level?: 2 | 3 }
   | { type: 'paragraph'; text: string }
-  | { type: 'list'; title?: string; items: string[] };
+  | { type: 'list'; title?: string; items: string[]; ordered?: boolean; start?: number }
+  | { type: 'table'; headers: string[]; rows: string[][] };
 
 const LIST_MARKER_PATTERN = /^((?:[-*•+]|✓)\s+|\d+[.)]\s+)/;
 
@@ -67,7 +68,11 @@ const truncateText = (value: string, limit: number) => {
   return `${value.slice(0, Math.max(0, limit - 1)).trimEnd()}...`;
 };
 
-const isHeadingLine = (line: string) => /\?$/.test(line) && line.length <= 120;
+const isHeadingLine = (line: string) =>
+  !LIST_MARKER_PATTERN.test(line) && (/^#{2,3}\s+/.test(line) || (/\?$/.test(line) && line.length <= 120));
+
+const tableCells = (line: string) => line.replace(/^\|/, '').replace(/\|$/, '').split('|').map((cell) => cell.trim());
+const isTableSeparator = (line: string) => line.startsWith('|') && tableCells(line).every((cell) => /^:?-{3,}:?$/.test(cell));
 
 const isListTitleLine = (line: string) => /:$/.test(line) && line.length <= 80;
 
@@ -87,7 +92,21 @@ function buildArticleBlocks(lines: string[]): ArticleBlock[] {
     }
 
     if (isHeadingLine(line)) {
-      blocks.push({ type: 'heading', text: line });
+      blocks.push({ type: 'heading', text: line.replace(/^#{2,3}\s+/, ''), level: line.startsWith('### ') ? 3 : 2 });
+      continue;
+    }
+
+    if (line.startsWith('|') && isTableSeparator(normalizeLine(lines[index + 1] || ''))) {
+      const headers = tableCells(line);
+      const rows: string[][] = [];
+      let cursor = index + 2;
+      while (cursor < lines.length && lines[cursor].startsWith('|')) {
+        const cells = tableCells(lines[cursor]);
+        rows.push(headers.map((_, cellIndex) => cells[cellIndex] || ''));
+        cursor += 1;
+      }
+      blocks.push({ type: 'table', headers, rows });
+      index = cursor - 1;
       continue;
     }
 
@@ -128,13 +147,14 @@ function buildArticleBlocks(lines: string[]): ArticleBlock[] {
     }
 
     if (isExplicitListItem(line)) {
+      const ordered = /^\d+[.)]\s+/.test(line);
       const items = [stripListMarker(line)];
       let cursor = index + 1;
 
       while (cursor < lines.length) {
         const nextLine = normalizeLine(lines[cursor] || '');
 
-        if (!nextLine || !isExplicitListItem(nextLine)) {
+        if (!nextLine || !isExplicitListItem(nextLine) || /^\d+[.)]\s+/.test(nextLine) !== ordered) {
           break;
         }
 
@@ -142,7 +162,7 @@ function buildArticleBlocks(lines: string[]): ArticleBlock[] {
         cursor += 1;
       }
 
-      blocks.push({ type: 'list', items });
+      blocks.push({ type: 'list', items, ordered, start: ordered ? parseInt(line, 10) : undefined });
       index = cursor - 1;
       continue;
     }
@@ -242,7 +262,9 @@ export default async function BlogPostPage({ params }: Props) {
   const guideCategories = Array.from(new Map(guideProducts.map((product) => [
     product.categorySlug || categoryToSlug(product.category), product.category,
   ])).entries());
-  const inlineContent = (text: string) => text.split(/(\[[^\]\n]+\]\((?:\/|https:\/\/)[^\s)]+\))/g).map((part, index) => {
+  const inlineContent = (text: string) => text.split(/(\*\*[^*\n]+\*\*|\[[^\]\n]+\]\((?:\/|https:\/\/)[^\s)]+\))/g).map((part, index) => {
+    const strong = part.match(/^\*\*([^*]+)\*\*$/);
+    if (strong) return <strong key={`strong-${index}`}>{strong[1]}</strong>;
     const match = part.match(/^\[([^\]]+)\]\((\/[^\s)]+)\)$/);
     if (match) {
       const href = resolveGuideHref(match[2], catalog, services.map((service) => service.slug));
@@ -520,24 +542,37 @@ export default async function BlogPostPage({ params }: Props) {
                   {renderedBlocks.length > 0 ? (
                     renderedBlocks.map((block, index) => {
                       if (block.type === 'heading') {
+                        const Heading = block.level === 3 ? 'h3' : 'h2';
                         return (
-                          <h2 key={`${blog.id}-heading-${index}`} className={styles.articleHeading}>
+                          <Heading key={`${blog.id}-heading-${index}`} className={block.level === 3 ? styles.articleSubheading : styles.articleHeading}>
                             {block.text}
-                          </h2>
+                          </Heading>
+                        );
+                      }
+
+                      if (block.type === 'table') {
+                        return (
+                          <div key={`${blog.id}-table-${index}`} className={styles.articleTableWrap} tabIndex={0} role="region" aria-label="Supplier comparison table">
+                            <table className={styles.articleTable}>
+                              <thead><tr>{block.headers.map((header, cellIndex) => <th key={cellIndex} scope="col">{inlineContent(header)}</th>)}</tr></thead>
+                              <tbody>{block.rows.map((row, rowIndex) => <tr key={rowIndex}>{row.map((cell, cellIndex) => <td key={cellIndex}>{inlineContent(cell)}</td>)}</tr>)}</tbody>
+                            </table>
+                          </div>
                         );
                       }
 
                       if (block.type === 'list') {
+                        const List = block.ordered ? 'ol' : 'ul';
                         return (
                           <section key={`${blog.id}-list-${index}`} className={styles.articleList}>
                             {block.title ? (
                               <h3 className={styles.articleListTitle}>{block.title}</h3>
                             ) : null}
-                            <ul className={styles.articleListItems}>
+                            <List start={block.ordered ? block.start : undefined} className={block.ordered ? styles.articleOrderedList : styles.articleListItems}>
                               {block.items.map((item, itemIndex) => (
                                 <li key={`${blog.id}-list-item-${index}-${itemIndex}`}>{inlineContent(item)}</li>
                               ))}
-                            </ul>
+                            </List>
                           </section>
                         );
                       }

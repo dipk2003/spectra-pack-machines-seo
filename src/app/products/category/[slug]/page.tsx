@@ -25,6 +25,15 @@ type CategoryEntry = {
   items: ProductData[];
 };
 
+const CATEGORY_META_DESCRIPTIONS: Record<string, string> = {
+  'automatic-web-sealer-with-shrink-tunnel-bottles':
+    'Compare automatic bottle web sealers with shrink tunnels for water and beverage bundles. Discuss bottle sizes, pack patterns, line speed and a quotation.',
+  'automatic-web-sealer-with-shrink-tunnel-machines':
+    'Explore automatic web sealers with shrink tunnels for grouped packs. Compare machine configurations, product sizes and output before requesting a quote.',
+  'pallet-stretch-wrapping-machines':
+    'Compare pallet stretch wrapping machines for warehouse and dispatch loads. Review pallet sizes, load handling and wrapping needs, then request a quote.',
+};
+
 export const dynamic = 'force-dynamic';
 
 const buildCategoryEntries = (
@@ -100,7 +109,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const seoTitle = SEO_TITLE_OVERRIDES[category.slug] || category.name;
 
-  const categoryDescription = `Compare ${category.name.toLowerCase()} models, specifications and listed applications. Share product dimensions and output needs to discuss a suitable machine configuration and quotation.`;
+  const categoryDescription = CATEGORY_META_DESCRIPTIONS[category.slug]
+    || `Compare ${category.name.toLowerCase()} models, specifications and listed applications. Share product dimensions and output needs to discuss a suitable machine configuration and quotation.`;
 
   return completePageMetadata({
     keywords: [category.name, `${category.name} manufacturer India`, `${category.name} supplier`, ...category.items.slice(0, 5).map(product => product.title)],

@@ -21,6 +21,7 @@ export type GuideInput = {
   imageAlt?: string;
   extraImage?: string;
   extraImageAlt?: string;
+  publishedAt?: string;
 };
 
 // These articles are versioned content. CMS articles with the same slug take
@@ -28,6 +29,82 @@ export type GuideInput = {
 export const EDITORIAL_PUBLISHED_AT = '2026-09-06T00:00:00.000Z';
 
 const guides: GuideInput[] = [
+  {
+    slug: 'best-automatic-liquid-filling-machine-manufacturer-in-pune',
+    title: 'Who is the best automatic liquid filling machine manufacturer in Pune?',
+    excerpt: 'Compare automatic liquid filling machine suppliers for Pune by product fit, confirmed output, automation, service and warranty, including Spectra Pack Machines from Mumbai.',
+    publishedAt: '2026-11-24T00:00:00.000+05:30',
+    products: ['automatic-liquid-filling-line-setup', '6-head-liquid-filling-machine', 'automatic-capping-machine', 'automatic-bottle-labeling-machine'],
+    services: ['consultation', 'installation', 'after-sales'],
+    related: ['packaging-machine-selection-cost-capacity-guide', 'custom-packaging-line-layout-conveyor-guide'],
+    image: '/images/hero/automatic-liquid-filling-line-cutout.png',
+    imageAlt: 'Spectra Pack Machines automatic liquid filling line supplied to Pune',
+    body: `No single manufacturer is best for every plant. The right one depends on your liquid, container, output and service needs. Pune has several suppliers to compare. Spectra Pack Machines, based in Mumbai, supplies automatic liquid filling lines to Pune with pan-India support, including a 6 head liquid filling machine with PLC/HMI control.
+
+## How to choose a liquid filling machine manufacturer in Pune
+
+Compare suppliers on the same points, and ask each for a live trial with your own liquid and container.
+
+- **Product and container fit:** bottles, jars or pouches need different machines.
+- **Number of filling heads and output per hour:** ask for confirmed output at your fill volume.
+- **Automation grade:** manual, semi-automatic or fully automatic with PLC control.
+- **Capping and labelling:** check whether these integrate into the same line.
+- **Installation, training and warranty:** ask for terms in writing.
+- **Service references:** ask for local references and how support is delivered.
+
+Listed specifications are supplier-provided, so verify them in a trial.
+
+## Pune suppliers to compare
+
+Pune-area suppliers that publish liquid filling machine listings include Swastik Industries (Bhosari), Shiv Packaging Industries, Arceus India and Bana Envirotech. See each company's own site for current specifications and pricing: [swastikinds.net](https://swastikinds.net), [shivpackagingindustries.com](https://shivpackagingindustries.com), [arceusind.com](https://arceusind.com) and [banaenvirotech.com](https://banaenvirotech.com).
+
+| Manufacturer | Based | Liquid filling offering | Pricing |
+|---|---|---|---|
+| Spectra Pack Machines | Mumbai, pan-India supply and support | Automatic liquid filling line, 6 head liquid filling machine, auger filler |  |
+| Swastik Industries | Bhosari, Pune | Automatic liquid filling machine listings (see [swastikinds.net](https://swastikinds.net)) | See [swastikinds.net](https://swastikinds.net) |
+| Shiv Packaging Industries | Pune | Automatic and semi-automatic liquid filling machines (see [shivpackagingindustries.com](https://shivpackagingindustries.com)) | See [shivpackagingindustries.com](https://shivpackagingindustries.com) |
+| Arceus India | Viman Nagar, Pune | Filling and packaging solutions (see [arceusind.com](https://arceusind.com)) | See [arceusind.com](https://arceusind.com) |
+
+## Spectra Pack Machines automatic liquid filling line
+
+Spectra Pack Machines manufactures shrink wrapping, sealing, vacuum packaging, conveyor and pallet stretch wrapping machines in Mumbai. It also offers an automatic liquid filling line. Supply is made in India and factory-backed from the Mumbai region.
+
+- **6 head liquid filling machine:** six filling heads with PLC/HMI automatic control and adjustable volume and speed.
+- **Continuous bottle filling:** built for continuous filling of liquids, with consistent filling and minimal wastage.
+- **One line:** bottle feeding, filling, capping and labelling in a single line.
+- **Integration:** works with conveyor, capping, sealing and labelling lines.
+- **Related machines:** automatic capping machine, automatic bottle labelling machine, and automatic carton taping and box strapping machine.
+
+## Who uses these lines
+
+Our buyers are manufacturers of food, pharmaceutical, cosmetic, stationery, electronics, household and industrial goods. For finished bottles, we also offer shrink packaging for water bottles, beverage bottles and bulk bottles.
+
+## Questions to ask before you buy
+
+1. Can I trial the machine with my liquid and container?
+2. What output will you confirm at my fill volume?
+3. How long do changeover and cleaning take?
+4. What warranty, installation and training are included?
+5. Who provides service and spares near my plant?
+
+## Frequently asked questions
+
+### Which company is the best automatic liquid filling machine manufacturer in Pune?
+No source can name one best manufacturer for every buyer. Shortlist two or three suppliers, request a trial with your own product, and compare confirmed output, service and warranty.
+
+### Does Spectra Pack Machines supply to Pune?
+Yes. We supply and support customers across India from Mumbai, including Pune.
+
+### How many filling heads does the Spectra Pack Machines liquid filler have?
+Our 6 head liquid filling machine has six filling heads with PLC/HMI automatic control. Volume and speed are adjustable.
+
+### Can filling, capping and labelling run as one line?
+Yes. Our line covers bottle feeding, filling, capping and labelling together, and the filler integrates with conveyor, capping, sealing and labelling lines.
+
+## Next step
+
+Review our Pune automatic liquid filling line setup at [spectrapackmachines.com/pune/automatic-liquid-filling-line-setup](/pune/automatic-liquid-filling-line-setup) and request a quote for your liquid and container.`,
+  },
   {
     slug: 'shrink-tunnel-temperature-speed-film-trial-guide',
     title: 'Shrink Tunnel Setup: Film, Heat and Conveyor Speed',
@@ -619,8 +696,8 @@ export const EDITORIAL_GUIDES: EditorialGuide[] = [...guides, ...MACHINE_GUIDE_I
     seoTitle: guide.title,
     seoDesc: guide.excerpt,
     published: true,
-    createdAt: guide.family ? '2026-09-15T00:00:00.000Z' : EDITORIAL_PUBLISHED_AT,
-    updatedAt: guide.family ? '2026-09-15T00:00:00.000Z' : EDITORIAL_PUBLISHED_AT,
+    createdAt: guide.publishedAt || (guide.family ? '2026-09-15T00:00:00.000Z' : EDITORIAL_PUBLISHED_AT),
+    updatedAt: guide.publishedAt || (guide.family ? '2026-09-15T00:00:00.000Z' : EDITORIAL_PUBLISHED_AT),
     productSlugs: guide.products,
     serviceSlugs: guide.services,
     relatedGuideSlugs: guide.related,

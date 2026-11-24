@@ -23,9 +23,10 @@ const truncateAtWord = (value: string, maxLength: number) => {
   const normalized = value.replace(/\s+/g, ' ').trim();
   if (normalized.length <= maxLength) return normalized;
 
-  const shortened = normalized.slice(0, maxLength + 1);
+  // Reserve one character for the ellipsis so the output stays within the limit.
+  const shortened = normalized.slice(0, maxLength);
   const boundary = shortened.lastIndexOf(' ');
-  return `${shortened.slice(0, boundary > maxLength * 0.65 ? boundary : maxLength).trim()}…`;
+  return `${shortened.slice(0, boundary > maxLength * 0.65 ? boundary : maxLength - 1).trim()}…`;
 };
 
 export const stripSeoBrandSuffix = (value: string) => {
@@ -49,7 +50,8 @@ export const buildAbsoluteSeoTitle = (value: string, fallback: string) => {
 type MetaDescriptionOptions = { keepBrand?: boolean; maxLength?: number };
 
 export const buildMetaDescription = (value: string, fallback: string, options: MetaDescriptionOptions = {}) => {
-  const clean = options.keepBrand ? (text: string) => text.replace(/\s+/g, ' ').trim() : removeBrandMentions;
+  // Company names belong in descriptions; removing them can break the sentence.
+  const clean = options.keepBrand === false ? removeBrandMentions : (text: string) => text.replace(/\s+/g, ' ').trim();
   return truncateAtWord(clean(value) || clean(fallback) || COMPANY_INFO.tagline, options.maxLength ?? 160);
 };
 
