@@ -13,6 +13,7 @@ import { CheckCircle, ArrowRight, Phone } from 'lucide-react';
 import styles from './page.module.css';
 import { buildAbsoluteSeoTitle, buildMetaDescription } from '@/lib/seo';
 import { machineBuyingGuide } from '@/lib/machine-buying-guide';
+import SolutionLinks from '@/components/solutions/SolutionLinks';
 
 interface Props {
   params: { city: string; machine: string };
@@ -188,7 +189,7 @@ export default async function SEOLandingPage({ params }: Props) {
             <AnimatedSection direction="left">
               <h2>Why Choose Our {product.title} in {city}?</h2>
               <p className={styles.para}>
-                With {COMPANY_INFO.yearsOfExperience}+ years of packaging machinery experience, Spectra Pack Machines helps businesses in {city}{' '}
+                With team packaging-industry experience dating to {COMPANY_INFO.industryExperienceSince}, Spectra Pack Machines helps businesses in {city}{' '}
                 compare the right {product.title} configuration for their product, pack size, output, and production layout.
               </p>
               <p className={styles.para}>
@@ -330,6 +331,7 @@ export default async function SEOLandingPage({ params }: Props) {
         <div className="seo-guide-grid">{machineGuides.map(blog => <Link key={blog.slug} href={'/blog/' + blog.slug} className="seo-guide-card"><h3>{blog.title}</h3><p>{blog.excerpt}</p></Link>)}</div>
         <div className="seo-guide-grid">{services.map(service => <Link key={service.slug} href={'/services/' + service.slug} className="seo-guide-card"><h3>{service.title}</h3><p>{service.description}</p></Link>)}</div>
       </div></section>
+      <SolutionLinks productSlug={product.slug} />
     </>
   );
 }

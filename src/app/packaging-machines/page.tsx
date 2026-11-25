@@ -81,7 +81,7 @@ export default async function PackagingMachinesIndiaPage() {
             <div className={styles.proofStrip}>
               <div><strong>Made in Maharashtra</strong><span>Factory-backed machine supply</span></div>
               <div><strong>{SEO_CITY_MARKETS.length}+ city markets</strong><span>Location-specific enquiry pages</span></div>
-              <div><strong>{COMPANY_INFO.yearsOfExperience}+ years</strong><span>Packaging machinery experience</span></div>
+              <div><strong>{COMPANY_INFO.yearsOfExperience}+ years</strong><span>Team packaging-industry experience</span></div>
             </div>
           </AnimatedSection>
         </div>

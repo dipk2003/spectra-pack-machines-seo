@@ -1,5 +1,6 @@
 import { completePageMetadata } from '@/lib/seo';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import Counter from '@/components/ui/Counter';
 import { COMPANY_INFO } from '@/lib/data';
@@ -9,16 +10,23 @@ import styles from './page.module.css';
 export const metadata: Metadata = completePageMetadata({
   title: 'About Our Packaging Machine Factory in Vasai',
   description:
-    'Learn about the Vasai-region factory, Mumbai office, leadership, and packaging machine manufacturing background.',
+    'Meet Spectra Pack Machines in Vasai, Maharashtra. Business established in 2025, with team industry experience since 2001 and pan-India machine support.',
   alternates: { canonical: '/about' },
   openGraph: { title: 'About Spectra Pack Machines', url: '/about' },
 });
 
+const companyQuestions = [
+  { q: 'What is Spectra Pack Machines?', a: 'Spectra Pack Machines is an industrial packaging machinery manufacturer and supplier based in Vasai, near Mumbai, Maharashtra, India. Its equipment covers filling, capping, labelling, shrink wrapping, sealing, vacuum packaging, conveyors and pallet stretch wrapping.' },
+  { q: 'Was the company established in 2001 or 2025?', a: 'The business was established in 2025. The team\'s packaging-industry experience dates to 2001. The team\'s prior experience is separate from the business establishment date.' },
+  { q: 'How can a buyer verify the supplier before ordering?', a: 'Contact the published business numbers, arrange a factory discussion or product trial, and request the legal business and tax details used on the quotation. Ask for the proposed configuration, applicable customer references, written warranty and service scope before ordering.' },
+  { q: 'Do Pune or Delhi pages mean there is a local factory?', a: 'No. The head office is in Vasai West and the manufacturing facility is in Vasai East, Palghar, in the Mumbai region. City pages help buyers plan delivery, installation and service enquiries; those arrangements are confirmed per project.' },
+];
+
 export default function AboutPage() {
   const timeline = [
     {
-      year: 'Origins',
-      event: 'Spectra Pack Machines began with a focus on dependable packaging equipment built around real manufacturing needs.',
+      year: '2025',
+      event: 'Spectra Pack Machines was established as a business. The team brings prior packaging-industry experience dating to 2001.',
     },
     {
       year: 'Expansion',
@@ -36,6 +44,10 @@ export default function AboutPage() {
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([
+        { '@context': 'https://schema.org', '@type': 'AboutPage', '@id': `${COMPANY_INFO.website}/about#webpage`, url: `${COMPANY_INFO.website}/about`, name: 'About Spectra Pack Machines', mainEntity: { '@id': `${COMPANY_INFO.website}/#organization` } },
+        { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: companyQuestions.map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) },
+      ]).replace(/</g, '\\u003c') }} />
       <section className={styles.hero}>
         <div className="container">
           <AnimatedSection>
@@ -59,7 +71,7 @@ export default function AboutPage() {
               {
                 num: COMPANY_INFO.yearsOfExperience,
                 suffix: '+',
-                label: 'Years in Industry',
+                label: 'Years of Team Experience',
               },
               {
                 num: COMPANY_INFO.machineSolutions,
@@ -254,6 +266,22 @@ export default function AboutPage() {
               </AnimatedSection>
             ))}
           </div>
+        </div>
+      </section>
+      <section id="company-facts" className={`section section-alt ${styles.companyFactsSection}`}>
+        <div className="container">
+          <span className="section-label">Company facts</span><h2 className="section-title">Establishment, experience and supplier verification</h2>
+          <dl className={styles.companyFacts}>
+            <div><dt>Business name</dt><dd>{COMPANY_INFO.legalName}</dd></div>
+            <div><dt>Business established</dt><dd>{COMPANY_INFO.foundedYear}</dd></div>
+            <div><dt>Team industry experience</dt><dd>Since {COMPANY_INFO.industryExperienceSince}; prior experience is separate from company establishment.</dd></div>
+            <div><dt>Official website</dt><dd><a href={COMPANY_INFO.website}>{COMPANY_INFO.website}</a></dd></div>
+            <div><dt>Head office</dt><dd>{COMPANY_INFO.headOffice}</dd></div>
+            <div><dt>Manufacturing facility</dt><dd>{COMPANY_INFO.factory}</dd></div>
+          </dl>
+          <p>Use the <Link href="/contact">published contact details</Link> to request a configuration-specific quotation, arrange a product trial or coordinate a factory visit. Ask for current registration details and relevant customer references directly; website information is not an independent certification or customer review.</p>
+          <div className={styles.companyQuestions}>{companyQuestions.map(({ q, a }) => <details key={q}><summary>{q}</summary><p>{a}</p></details>)}</div>
+          <p><Link href="/solutions">Explore machine applications and buying guides</Link> · <Link href="/schedule-meeting">Arrange a technical discussion</Link></p>
         </div>
       </section>
     </>

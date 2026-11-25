@@ -9,6 +9,7 @@ import AnimatedSection from '@/components/ui/AnimatedSection';
 import { listProducts, listServices, type ServiceRecord } from '@/lib/cms';
 import { COMPANY_INFO, PRODUCTS, SERVICES, groupProductsByCategory } from '@/lib/data';
 import styles from './page.module.css';
+import SolutionLinks from '@/components/solutions/SolutionLinks';
 
 type Props = { params: { slug: string } };
 
@@ -97,6 +98,7 @@ export default async function ServiceDetailPage({ params }: Props) {
       areaServed: { '@type': 'Country', name: 'India' },
       provider: {
         '@type': 'Organization',
+        '@id': `${COMPANY_INFO.website}/#organization`,
         name: COMPANY_INFO.name,
         url: COMPANY_INFO.website,
         telephone: COMPANY_INFO.phone[0],
@@ -198,6 +200,7 @@ export default async function ServiceDetailPage({ params }: Props) {
         {relevantBlogs.length > 0 && <><h2>Guides for {service.title}</h2><div className="seo-guide-grid">{relevantBlogs.map(blog => <Link key={blog.slug} href={'/blog/' + blog.slug} className="seo-guide-card"><h3>{blog.title}</h3><p>{blog.excerpt}</p></Link>)}</div></>}
         <p><Link href="/packaging-machines">Machine supply and service enquiries across India</Link></p>
       </div></section>
+      <SolutionLinks />
       <section className={styles.cta}>
         <div className="container">
           <AnimatedSection>

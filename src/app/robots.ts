@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       // Explicit search-agent names document discoverability intent. Keep the
       // same private-route restrictions for every agent in this group.
-      userAgent: ['*', 'Googlebot', 'Bingbot', 'OAI-SearchBot', 'ChatGPT-User', 'PerplexityBot', 'Claude-SearchBot', 'Claude-User'],
+      userAgent: ['*', 'Googlebot', 'Bingbot', 'OAI-SearchBot', 'ChatGPT-User', 'PerplexityBot', 'Perplexity-User', 'Claude-SearchBot', 'Claude-User'],
       allow: '/',
       disallow: ['/admin', '/api'],
     },

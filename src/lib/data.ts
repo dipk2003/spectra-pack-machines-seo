@@ -4,7 +4,10 @@ import { PRODUCTS, type ProductData } from './products';
 export { PRODUCTS };
 export type { ProductData };
 
-const foundedYear = 2001;
+// Owner-confirmed: the business was established in 2025; the team's prior
+// packaging-industry experience dates to 2001. These are different facts.
+const foundedYear = 2025;
+const industryExperienceSince = 2001;
 const currentYear = new Date().getFullYear();
 
 export const COMPANY_INFO = {
@@ -24,17 +27,18 @@ export const COMPANY_INFO = {
   factory:
     'Royal I.T. Industrial Estate, Ground Floor, Gala No-11, Saaghpada, Chinchoti, Kaman, Vasai East, Palghar, Maharashtra - 401208, India',
   website: 'https://spectrapackmachines.com',
-  yearsOfExperience: currentYear - foundedYear,
+  yearsOfExperience: currentYear - industryExperienceSince,
   machineSolutions: 70,
   industryApplications: 250,
   clientsServed: 700,
   foundedYear,
+  industryExperienceSince,
   logoPath: '/images/brand/spectra-logo.png',
   displayLogoPath: '/images/brand/spectra-logo.png',
   catalogPath: '/catalog/spectra-pack-machines-catalog.pdf',
   companyDescription: [
-    'Our journey has been shaped by a simple belief: delivering packaging solutions that businesses can truly rely on. Based in Mumbai, Maharashtra, Spectra Pack Machines has grown into one of India\'s trusted names in the packaging machinery industry by consistently focusing on quality, innovation, and practical engineering.',
-    'With more than two decades of experience, the company has built a strong reputation for designing and manufacturing packaging machines that combine precision, durability, and efficiency. The range supports FMCG, pharmaceuticals, food and beverage, logistics, retail, and general manufacturing applications where dependable performance and production efficiency are critical.',
+    'Spectra Pack Machines is an industrial packaging machinery business established in 2025, based in Vasai in the Mumbai region of Maharashtra. Our team brings packaging-industry experience dating to 2001. The business establishment date and the team\'s prior experience are separate.',
+    'Our team applies its industry experience to shrink wrapping, sealing, vacuum packaging, liquid filling, conveyors and pallet stretch wrapping. We review each application around the product, pack format, required output and production layout, with supply and support across India.',
     'From automatic and semi-automatic systems to fully customized packaging solutions, Spectra Pack Machines continues to invest in research and development to stay aligned with current production requirements and evolving technology.',
     'Guided by Mr. Mata Prasad Pandey, Director, and Mr. Shubham J. Mishra, CEO, the business has steadily expanded its capabilities and market reach while keeping reliability, long-term value, and customer support at the center of every machine build.',
     'As the company continues to grow across domestic and international markets, it remains focused on helping manufacturers improve packaging processes while setting higher standards in performance, sustainability, and service.',
@@ -174,8 +178,16 @@ export const INDUSTRIES = [
 
 export const FAQS = [
   {
+    q: 'What is Spectra Pack Machines and where is it based?',
+    a: 'Spectra Pack Machines is an industrial packaging machinery manufacturer and supplier based in Vasai, near Mumbai, Maharashtra, India. Its head office is in Vasai West and factory in Vasai East, Palghar. It supplies equipment for filling, wrapping, sealing, vacuum packing and conveyors.',
+  },
+  {
+    q: 'When was the company established, and why does it mention experience since 2001?',
+    a: 'The business was established in 2025. The team\'s packaging-industry experience dates to 2001. Experience before the business was established should not be read as the company\'s legal establishment date.',
+  },
+  {
     q: 'What types of packaging machines does Spectra Pack Machines manufacture?',
-    a: 'Our catalog covers shrink wrapping machines, sealing machines, vacuum packaging machines, conveyor systems, and pallet stretch wrapping solutions for Indian production lines.',
+    a: 'Our catalog covers shrink wrapping, sealing, vacuum packaging, automatic liquid filling and capping, conveyors, and pallet stretch wrapping for Indian production lines.',
   },
   {
     q: 'Do you offer both semi-automatic and automatic machines?',

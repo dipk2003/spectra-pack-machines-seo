@@ -5,6 +5,7 @@ import { getSiteSetting, listCategories, listProducts } from '@/lib/cms';
 import { parseHeroCarouselSettings } from '@/lib/home-hero';
 import { FAQS, PRODUCTS } from '@/lib/data';
 import { withTimeout } from '@/lib/async-timeout';
+import SolutionLinks from '@/components/solutions/SolutionLinks';
 
 export const dynamic = 'force-dynamic';
 
@@ -93,6 +94,7 @@ export default async function HomePage() {
         initialCategories={categories}
         initialHeroSettings={heroSettings}
       />
+      <SolutionLinks />
     </>
   );
 }

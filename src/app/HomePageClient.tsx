@@ -272,7 +272,7 @@ export default function HomePageClient({
                   Get a machine quote
                 </Link>
                 <p style={{ margin: 0, maxWidth: '38rem' }}>
-                  Over two decades manufacturing packaging machinery | Shrink wrapping, sealing, vacuum
+                  Team industry experience since 2001; business established 2025 | Shrink wrapping, sealing, vacuum
                   packaging and conveyors | Commissioning and after-sales support
                 </p>
               </div>
@@ -337,7 +337,7 @@ export default function HomePageClient({
 
           <div className="grid-4">
             {[
-              { icon: <Award size={28} />, title: 'Since 2001', desc: 'Established packaging machine manufacturing experience built over more than two decades.' },
+              { icon: <Award size={28} />, title: 'Team Experience Since 2001', desc: 'The team brings prior industry experience; Spectra Pack Machines was established in 2025.' },
               { icon: <Factory size={28} />, title: 'Factory-Backed Supply', desc: 'Head office in Vasai West and factory presence in Vasai East, Palghar for direct technical coordination.' },
               { icon: <Shield size={28} />, title: 'Application-Focused Machines', desc: 'Bottle packs, cartons, pouches, vacuum packs, conveyors, and pallet handling solutions.' },
               { icon: <Clock size={28} />, title: 'Fast Technical Response', desc: 'Direct call, WhatsApp, and enquiry support for machine selection and quotations.' },
@@ -418,7 +418,7 @@ export default function HomePageClient({
                   <div className={styles.aboutStatGrid}>
                     <div className={styles.aboutStatItem}>
                       <Counter end={COMPANY_INFO.yearsOfExperience} suffix="+" className={styles.aboutStatNum} />
-                      <span>Years</span>
+                      <span>Years of Team Experience</span>
                     </div>
                     <div className={styles.aboutStatItem}>
                       <Counter end={COMPANY_INFO.machineSolutions} suffix="+" className={styles.aboutStatNum} />
@@ -564,7 +564,7 @@ export default function HomePageClient({
                   </div>
                   <div>
                     <strong>{COMPANY_INFO.yearsOfExperience}+</strong>
-                    <span>years of experience</span>
+                    <span>years of team experience</span>
                   </div>
                   <div>
                     <strong>India</strong>

@@ -29,7 +29,7 @@ export default function ClientsPage() {
             </span>
             <h1 className={styles.heroTitle}>Packaging Applications & Representative Clients</h1>
             <p className={styles.heroDesc}>
-              With {COMPANY_INFO.yearsOfExperience}+ years in the industry and {COMPANY_INFO.clientsServed}+ clients served,
+              With team experience dating to {COMPANY_INFO.industryExperienceSince} and a business established in {COMPANY_INFO.foundedYear},
               Spectra Pack supports packaging requirements across bottles, cartons, pouches, tubes,
               vacuum packs, and dispatch-ready pallet loads.
             </p>
