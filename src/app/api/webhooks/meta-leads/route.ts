@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { readWebhookBody, secureEqual, verifyMetaSignature } from '@/lib/provider-webhooks';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { CRM_PRIVATE_HEADERS } from '@/lib/crm-http';
+import { dispatchLeadNotifications } from '@/lib/lead-notifications';
 
 export const dynamic = 'force-dynamic';
 
@@ -137,7 +138,7 @@ export async function POST(req: NextRequest) {
         const machineInterest = fields.get('machine_interest') || productDetails.join('; ').slice(0, 300);
         const excluded = new Set(['full_name', 'first_name', 'last_name', 'email', 'email_address', 'phone', 'phone_number', 'company_name', 'company', 'machine_interest']);
         const extra = Array.from(fields.entries()).filter(([key]) => !excluded.has(key)).map(([key, fieldValue]) => `${key.replace(/_/g, ' ')}: ${fieldValue}`);
-        const { error } = await db.rpc('crm_ingest_external_lead', {
+        const { data: savedLeadId, error } = await db.rpc('crm_ingest_external_lead', {
           p_provider: 'meta-ads', p_external_id: leadgenId,
           p_lead: {
             name, email, phone, company: fields.get('company_name') || fields.get('company') || '',
@@ -147,6 +148,7 @@ export async function POST(req: NextRequest) {
           },
         });
         if (error) throw new Error('Lead storage unavailable.');
+        if (savedLeadId) await dispatchLeadNotifications(String(savedLeadId));
       }
     }
     return NextResponse.json({ received: true }, { headers: CRM_PRIVATE_HEADERS });

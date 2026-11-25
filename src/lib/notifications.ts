@@ -2,6 +2,7 @@ import { randomBytes } from 'crypto';
 import { COMPANY_INFO } from './data';
 import { sendEmail } from './email';
 import { getSiteOrigin } from './runtime-config';
+import { leadNotificationSource } from './lead-notification-source';
 
 const SITE_ORIGIN = getSiteOrigin();
 const MEETING_BASE_URL = (process.env.MEETING_BASE_URL || 'https://meet.jit.si').replace(/\/$/, '');
@@ -210,10 +211,25 @@ export async function sendLeadOwnerNotificationEmail(input: {
   machineInterest?: string;
   message: string;
   source: string;
+  leadId?: string;
+  attribution?: Record<string, unknown>;
 }) {
-  const sourceLabel = formatLeadSourceLabel(input.source);
-  const detailRows = buildDetailRows([
+  const traffic = leadNotificationSource(input.attribution || { source: input.source });
+  const sourceLabel = traffic.channel;
+  const sourceDetails = [
     { label: 'Source', value: sourceLabel },
+    { label: 'Captured via', value: formatLeadSourceLabel(traffic.capture || input.source) },
+    { label: 'Campaign', value: traffic.campaign },
+    { label: 'Ad set / search term', value: traffic.adSet },
+    { label: 'Ad / form', value: traffic.ad },
+    { label: 'UTM source', value: traffic.utmSource },
+    { label: 'UTM medium', value: traffic.utmMedium },
+    { label: 'Landing page', value: traffic.landingPage },
+    { label: 'Referrer', value: traffic.referrer },
+    { label: 'CRM lead ID', value: input.leadId || '' },
+  ];
+  const detailRows = buildDetailRows([
+    ...sourceDetails,
     { label: 'Customer Name', value: input.name },
     { label: 'Email', value: input.email },
     { label: 'Phone', value: input.phone },
@@ -223,20 +239,20 @@ export async function sendLeadOwnerNotificationEmail(input: {
 
   return sendEmail({
     to: OWNER_NOTIFICATION_EMAIL,
-    replyTo: input.email,
-    subject: `New website enquiry from ${input.name} | ${sourceLabel}`,
-    text: `A new website enquiry has been submitted.\n\n${buildPlainDetails([
-      { label: 'Source', value: sourceLabel },
+    replyTo: input.email || undefined,
+    subject: `New CRM lead | ${sourceLabel} | ${input.name}`,
+    text: `A new lead has arrived in the CRM.\n\n${buildPlainDetails([
+      ...sourceDetails,
       { label: 'Customer Name', value: input.name },
       { label: 'Email', value: input.email },
       { label: 'Phone', value: input.phone },
       { label: 'Company', value: input.company || '' },
       { label: 'Machine Interest', value: input.machineInterest || '' },
       { label: 'Customer Message', value: input.message },
-    ])}`,
+    ])}\n\nOpen CRM: ${SITE_ORIGIN}/admin/leads`,
     html: wrapEmail(
-      'New website enquiry received',
-      `A new enquiry has been submitted on the website via ${sourceLabel}.`,
+      'New CRM lead received',
+      `A new lead arrived from ${sourceLabel}.`,
       `
         ${detailRows}
         <div style="margin:0;border:1px solid #e2e8f0;border-radius:16px;padding:18px;background:#f8fafc;">
@@ -244,7 +260,7 @@ export async function sendLeadOwnerNotificationEmail(input: {
           <div style="margin:0;font-size:15px;line-height:1.7;color:#0f172a;">${escapeMultilineHtml(input.message)}</div>
         </div>
       `,
-      { label: 'Reply to Customer', href: `mailto:${input.email}` },
+      { label: 'Open lead CRM', href: `${SITE_ORIGIN}/admin/leads` },
     ),
   });
 }

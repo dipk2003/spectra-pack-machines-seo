@@ -3,9 +3,9 @@ import { isAdminRequest } from '@/lib/admin-auth';
 import { createLead, getCatalogPath, listLeads, normalizeLeadInput } from '@/lib/cms';
 import {
   sendCatalogEmail,
-  sendLeadOwnerNotificationEmail,
   sendLeadThankYouEmail,
 } from '@/lib/notifications';
+import { dispatchLeadNotifications } from '@/lib/lead-notifications';
 import {
   enforcePublicFormProtection,
   readPublicFormInput,
@@ -34,16 +34,8 @@ export async function POST(req: NextRequest) {
     const machineInterest = leadInput.machineInterest;
 
     try {
-      const result = await sendLeadOwnerNotificationEmail({
-        name: leadInput.name,
-        email: leadInput.email,
-        phone: leadInput.phone,
-        company: leadInput.company,
-        machineInterest,
-        message: leadInput.message,
-        source: leadInput.source,
-      });
-      ownerEmailSent = result.sent;
+      const result = await dispatchLeadNotifications(lead.id);
+      ownerEmailSent = result.sent > 0;
     } catch (emailError) {
       console.error('Lead owner email failed:', emailError);
     }
