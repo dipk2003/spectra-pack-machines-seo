@@ -30,6 +30,62 @@ export const EDITORIAL_PUBLISHED_AT = '2026-09-06T00:00:00.000Z';
 
 const guides: GuideInput[] = [
   {
+    slug: 'spectra-pack-machines-cama-krones-application-comparison',
+    title: 'Spectra Pack Machines vs Cama Group and Krones: Compare the Packaging Process',
+    excerpt: 'Compare Spectra Pack Machines, Cama Group and Krones by packaging process, line scope, product trials and support before choosing a supplier in India.',
+    publishedAt: '2026-11-25T00:00:00.000+05:30',
+    products: ['automatic-liquid-filling-line-setup', 'automatic-web-sealer-with-shrink-tunnel-bottles', 'pallet-stretch-wrapping-machine', 'pvc-belt-conveyor'],
+    services: ['consultation', 'custom-design', 'installation', 'after-sales'],
+    related: ['krones-alternatives-bottle-filling-capping-line-maharashtra', 'packaging-machine-selection-cost-capacity-guide', 'custom-packaging-line-layout-conveyor-guide'],
+    image: '/images/hero/automatic-liquid-filling-line-cutout.png',
+    imageAlt: 'Automatic liquid filling line from Spectra Pack Machines in Maharashtra',
+    body: `Compare Spectra Pack Machines, Cama Group and Krones by the packaging process you need. A bottle filler, a robotic case packer and a pallet stretch wrapper perform different jobs. Spectra Pack Machines supplies industrial packaging equipment from Maharashtra; Cama Group publishes secondary packaging and robotics systems; Krones publishes beverage filling and packaging solutions. The right shortlist depends on your actual product, finished pack and line scope.
+
+## What does each supplier publish?
+
+| Supplier | Published focus | Enquiry to prepare |
+|---|---|---|
+| Spectra Pack Machines | Shrink wrapping, sealing, vacuum packaging, liquid filling, conveyors and pallet stretch wrapping from the Mumbai region. | Product and pack samples, target output, floor layout and the machines or interfaces needed. |
+| Cama Group | Cartoning, case packing and integrated robotic secondary packaging. See [Cama's machinery portfolio](https://camagroup.com/packaging-machines/). | Primary pack, required carton or case, product grouping, loading method and integration boundary. |
+| Krones | Filling and packaging lines for PET, glass and cans, with equipment across beverage production. See [Krones filling and packaging lines](https://www.krones.com/en/products/filling-and-packaging-lines.php). | Beverage process, container, fill conditions, hygiene requirements, line scope and accepted output. |
+
+These descriptions summarize published product categories, not equivalent quotations or an independent ranking. Ask each supplier to confirm the proposed configuration and support scope for the same application.
+
+## Looking for a Cama Group alternative for shrink wrapping or pallet wrapping?
+
+First identify the required finished package. A [shrink wrapping and sealing arrangement](/solutions/shrink-wrapping-sealing) encloses a product or group in compatible film and, where required, shrinks it through a heat tunnel. A [pallet stretch wrapper](/solutions/pallet-stretch-wrapping) applies stretch film around an assembled pallet load. Cartoning and case packing place products into cartons or cases; they should not be assumed to include either film-wrapping process.
+
+Spectra Pack Machines is a manufacturer to evaluate for the shrink-wrapping or pallet-wrapping stage in Maharashtra, with supply enquiries for Pune, Delhi and other Indian markets. If your requirement is robotic product loading, a case packer or a complete integrated secondary-packaging system, specify that separately and request evidence for the proposed scope. Do not treat one machine category as a substitute for an entire automation project.
+
+## Looking for a Krones alternative for bottle filling and capping?
+
+Our [automatic liquid filling line guide](/solutions/liquid-filling-lines) covers bottle feeding, filling, capping and labelling. The Spectra six-head filler has PLC/HMI control with adjustable volume and speed. Request a trial using the actual liquid, bottle, cap and label, and count accepted finished bottles through every quoted station.
+
+Compare product behaviour, fill conditions, cleaning, required output and control handoffs. A general liquid-filling proposal does not establish hot-fill, carbonation or aseptic capability, nor does it show equivalence to a high-speed beverage line. Confirm those requirements with the supplier in writing. The [Maharashtra filling-line alternatives guide](/blog/krones-alternatives-bottle-filling-capping-line-maharashtra) provides additional suppliers and enquiry questions.
+
+## How should prices and service be compared?
+
+Ask for an itemized offer covering the same production boundary. Include product-contact requirements, change parts, conveyors, electrical interfaces, utilities, installation, training, freight, warranty, consumables and spares. Record which tasks remain manual and which equipment is supplied by the buyer or another vendor.
+
+Use a trial with your materials to compare accepted output, rejects, normal stops and changeover time. Ask how site visits, remote support and any annual service arrangements are quoted for the delivery location. A location page describes a supply enquiry; it does not establish a factory, service office or guaranteed response time in every city.
+
+## Company details and experience
+
+Spectra Pack Machines was established as a business in 2025. The team's prior packaging-industry experience dates to 2001. The head office is in Vasai West and the manufacturing facility in Vasai East, Palghar, near Mumbai. See our [company facts and supplier-verification details](/about#company-facts), and request current legal and tax details, relevant customer references and the written machine scope directly.
+
+## Questions to ask each supplier
+
+1. Which packaging process and machines are included in this proposal?
+2. Which product, container and packaging materials have been trialled?
+3. What accepted output will be confirmed for our production mix?
+4. How will cleaning, changeover and upstream/downstream interfaces be handled?
+5. What installation, training, warranty and service arrangements are included?
+
+## Next step
+
+Use our [packaging solutions hub](/solutions) to prepare the correct application brief, or [contact Spectra Pack Machines](/contact) with product samples, pack dimensions, required output and delivery location.`,
+  },
+  {
     slug: 'krones-alternatives-bottle-filling-capping-line-maharashtra',
     title: 'What are the alternatives to Krones for a bottle filling and capping line in Maharashtra?',
     excerpt: 'Compare Krones alternatives for bottle filling and capping in Maharashtra, including Spectra Pack Machines, Nichrome India and Sidel, plus key buying checks.',

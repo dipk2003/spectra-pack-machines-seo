@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { listPublicBlogs } from '@/lib/public-blogs';
+import SolutionLinks from '@/components/solutions/SolutionLinks';
 import { blogsForProduct } from '@/lib/content-links';
 import { completePageMetadata, machineSearchKeywords } from '@/lib/seo';
 import type { Metadata } from 'next';
@@ -106,6 +107,7 @@ export default async function ProductPage({ params }: Props) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }} />
       <ProductPageClient product={product} allProducts={products} />
+      <SolutionLinks productSlug={product.slug} />
       <section className="section section-alt" aria-labelledby="machine-buying-heading"><div className="container">
         <h2 id="machine-buying-heading">{product.title}: price and selection guide</h2>
         {MODEL_GUIDE_PROFILES[product.slug] && <nav aria-label="Detailed machine guides"><p>

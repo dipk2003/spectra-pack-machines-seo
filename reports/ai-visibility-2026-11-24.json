@@ -1,0 +1,597 @@
+{
+  "source_files_supplied": 2,
+  "unique_source_files": 1,
+  "source_sha256": [
+    "b6b3a1f02fbd7dbbf61dee3e09eb76d925e80bcd7fdc5a484806ca45229588d4"
+  ],
+  "snapshot_dates": [
+    "2026-11-24"
+  ],
+  "overall": {
+    "responses": 99,
+    "mentions": 23,
+    "mention_rate_percent": 23.2,
+    "positive_sentiment_values": {
+      "unspecified": 76,
+      "bad": 1,
+      "neutral": 19,
+      "good": 3
+    },
+    "reported_positions_when_mentioned": {
+      "1": 12,
+      "unspecified": 5,
+      "4": 3,
+      "13": 2,
+      "2": 1
+    }
+  },
+  "brand_queries": {
+    "responses": 20,
+    "mentions": 19,
+    "mention_rate_percent": 95.0,
+    "positive_sentiment_values": {
+      "bad": 1,
+      "neutral": 15,
+      "unspecified": 1,
+      "good": 3
+    },
+    "reported_positions_when_mentioned": {
+      "1": 12,
+      "4": 3,
+      "unspecified": 3,
+      "13": 1
+    }
+  },
+  "service_queries": {
+    "responses": 79,
+    "mentions": 4,
+    "mention_rate_percent": 5.1,
+    "positive_sentiment_values": {
+      "unspecified": 75,
+      "neutral": 4
+    },
+    "reported_positions_when_mentioned": {
+      "unspecified": 2,
+      "13": 1,
+      "2": 1
+    }
+  },
+  "unique_prompts": 23,
+  "unique_prompt_platform_pairs": 92,
+  "repeated_prompt_platform_observations": 7,
+  "by_platform": {
+    "ChatGPT": {
+      "responses": 25,
+      "mentions": 7,
+      "mention_rate_percent": 28.0,
+      "positive_sentiment_values": {
+        "unspecified": 18,
+        "neutral": 6,
+        "good": 1
+      },
+      "reported_positions_when_mentioned": {
+        "1": 5,
+        "unspecified": 2
+      }
+    },
+    "Claude": {
+      "responses": 25,
+      "mentions": 5,
+      "mention_rate_percent": 20.0,
+      "positive_sentiment_values": {
+        "unspecified": 20,
+        "neutral": 3,
+        "good": 2
+      },
+      "reported_positions_when_mentioned": {
+        "unspecified": 3,
+        "13": 1,
+        "4": 1
+      }
+    },
+    "Google AI Overviews": {
+      "responses": 24,
+      "mentions": 5,
+      "mention_rate_percent": 20.8,
+      "positive_sentiment_values": {
+        "unspecified": 19,
+        "bad": 1,
+        "neutral": 4
+      },
+      "reported_positions_when_mentioned": {
+        "1": 3,
+        "4": 2
+      }
+    },
+    "Perplexity": {
+      "responses": 25,
+      "mentions": 6,
+      "mention_rate_percent": 24.0,
+      "positive_sentiment_values": {
+        "neutral": 6,
+        "unspecified": 19
+      },
+      "reported_positions_when_mentioned": {
+        "1": 4,
+        "13": 1,
+        "2": 1
+      }
+    }
+  },
+  "by_topic": {
+    "Automatic liquid filling lines": {
+      "responses": 24,
+      "mentions": 1,
+      "mention_rate_percent": 4.2,
+      "positive_sentiment_values": {
+        "unspecified": 23,
+        "neutral": 1
+      },
+      "reported_positions_when_mentioned": {
+        "2": 1
+      }
+    },
+    "Brand Questions": {
+      "responses": 20,
+      "mentions": 19,
+      "mention_rate_percent": 95.0,
+      "positive_sentiment_values": {
+        "bad": 1,
+        "neutral": 15,
+        "unspecified": 1,
+        "good": 3
+      },
+      "reported_positions_when_mentioned": {
+        "1": 12,
+        "4": 3,
+        "unspecified": 3,
+        "13": 1
+      }
+    },
+    "Conveyor belt systems": {
+      "responses": 4,
+      "mentions": 0,
+      "mention_rate_percent": 0.0,
+      "positive_sentiment_values": {
+        "unspecified": 4
+      },
+      "reported_positions_when_mentioned": {}
+    },
+    "Pallet stretch wrapping": {
+      "responses": 23,
+      "mentions": 2,
+      "mention_rate_percent": 8.7,
+      "positive_sentiment_values": {
+        "unspecified": 21,
+        "neutral": 2
+      },
+      "reported_positions_when_mentioned": {
+        "unspecified": 1,
+        "13": 1
+      }
+    },
+    "Shrink wrapping and sealing": {
+      "responses": 24,
+      "mentions": 1,
+      "mention_rate_percent": 4.2,
+      "positive_sentiment_values": {
+        "unspecified": 23,
+        "neutral": 1
+      },
+      "reported_positions_when_mentioned": {
+        "unspecified": 1
+      }
+    },
+    "Vacuum packaging systems": {
+      "responses": 4,
+      "mentions": 0,
+      "mention_rate_percent": 0.0,
+      "positive_sentiment_values": {
+        "unspecified": 4
+      },
+      "reported_positions_when_mentioned": {}
+    }
+  },
+  "inconsistent_rows": [
+    {
+      "row": 31,
+      "platform": "Perplexity",
+      "prompt": "Best pallet stretch wrapping machine manufacturer in Pune?",
+      "mentioned": false,
+      "text_mention": false,
+      "reported_position": "11"
+    },
+    {
+      "row": 50,
+      "platform": "Perplexity",
+      "prompt": "Is Spectra Pack Machines legit?",
+      "mentioned": false,
+      "text_mention": false,
+      "reported_position": "1"
+    },
+    {
+      "row": 85,
+      "platform": "Perplexity",
+      "prompt": "Best automatic liquid filling machine manufacturer in Delhi?",
+      "mentioned": false,
+      "text_mention": false,
+      "reported_position": "11"
+    }
+  ],
+  "entity_review_rows": [
+    {
+      "row": 69,
+      "platform": "Claude",
+      "prompt": "Is Spectra Pack Machines worth it?",
+      "reason": "Unrelated product terms: inspect entity match manually"
+    }
+  ],
+  "linked_domains_by_response": {
+    "tradeindia.com": 8,
+    "justdial.com": 7,
+    "spectrapackmachines.com": 7,
+    "aajjo.com": 5,
+    "sunshinepack.com": 4,
+    "indiamart.com": 4,
+    "qualisengineers.in": 3,
+    "bandma.co.in": 3,
+    "zonesun.com": 2,
+    "signode.com": 2,
+    "asnpack.com": 2,
+    "bntecpackautomation.com": 2,
+    "handleitinc.com": 2,
+    "lantech.com": 2,
+    "asnpack.in": 2,
+    "joy-pack.com": 2,
+    "svmc.co.in": 2,
+    "royalpackindustries.in": 2,
+    "krones.com": 2,
+    "svppnd.com": 1
+  },
+  "responses_with_direct_site_links": [
+    {
+      "platform": "ChatGPT",
+      "prompt": "Spectra Pack Machines vs Cama Group"
+    },
+    {
+      "platform": "ChatGPT",
+      "prompt": "Spectra Pack Machines vs Krones"
+    },
+    {
+      "platform": "ChatGPT",
+      "prompt": "Is Spectra Pack Machines worth it?"
+    },
+    {
+      "platform": "Perplexity",
+      "prompt": "Cama Group alternatives for pallet wrapping in Maharashtra?"
+    },
+    {
+      "platform": "ChatGPT",
+      "prompt": "Is Spectra Pack Machines legit?"
+    },
+    {
+      "platform": "ChatGPT",
+      "prompt": "What is Spectra Pack Machines?"
+    },
+    {
+      "platform": "Perplexity",
+      "prompt": "Spectra Pack Machines vs Krones"
+    }
+  ],
+  "prompt_coverage": [
+    {
+      "prompt": "Best pallet stretch wrapping machine manufacturer in Delhi?",
+      "topic": "Pallet stretch wrapping",
+      "target": "/solutions/pallet-stretch-wrapping",
+      "responses": 4,
+      "mentions": 0,
+      "mention_rate_percent": 0.0,
+      "positive_sentiment_values": {
+        "unspecified": 4
+      },
+      "reported_positions_when_mentioned": {}
+    },
+    {
+      "prompt": "Best pallet stretch wrapping machine for a small warehouse?",
+      "topic": "Pallet stretch wrapping",
+      "target": "/solutions/pallet-stretch-wrapping",
+      "responses": 7,
+      "mentions": 0,
+      "mention_rate_percent": 0.0,
+      "positive_sentiment_values": {
+        "unspecified": 7
+      },
+      "reported_positions_when_mentioned": {}
+    },
+    {
+      "prompt": "Is Spectra Pack Machines worth it?",
+      "topic": "Brand Questions",
+      "target": "/about",
+      "responses": 4,
+      "mentions": 4,
+      "mention_rate_percent": 100.0,
+      "positive_sentiment_values": {
+        "bad": 1,
+        "neutral": 3
+      },
+      "reported_positions_when_mentioned": {
+        "1": 3,
+        "unspecified": 1
+      }
+    },
+    {
+      "prompt": "Best shrink wrapping machine manufacturer in Pune?",
+      "topic": "Shrink wrapping and sealing",
+      "target": "/solutions/shrink-wrapping-sealing",
+      "responses": 4,
+      "mentions": 0,
+      "mention_rate_percent": 0.0,
+      "positive_sentiment_values": {
+        "unspecified": 4
+      },
+      "reported_positions_when_mentioned": {}
+    },
+    {
+      "prompt": "Cama Group alternatives for shrink wrapping machines in Maharashtra?",
+      "topic": "Shrink wrapping and sealing",
+      "target": "/blog/spectra-pack-machines-cama-krones-application-comparison",
+      "responses": 4,
+      "mentions": 1,
+      "mention_rate_percent": 25.0,
+      "positive_sentiment_values": {
+        "unspecified": 3,
+        "neutral": 1
+      },
+      "reported_positions_when_mentioned": {
+        "unspecified": 1
+      }
+    },
+    {
+      "prompt": "Best pallet stretch wrapping machine for a small factory?",
+      "topic": "Pallet stretch wrapping",
+      "target": "/solutions/pallet-stretch-wrapping",
+      "responses": 4,
+      "mentions": 0,
+      "mention_rate_percent": 0.0,
+      "positive_sentiment_values": {
+        "unspecified": 4
+      },
+      "reported_positions_when_mentioned": {}
+    },
+    {
+      "prompt": "Best automatic liquid filling machine manufacturer in Delhi?",
+      "topic": "Automatic liquid filling lines",
+      "target": "/solutions/liquid-filling-lines",
+      "responses": 4,
+      "mentions": 0,
+      "mention_rate_percent": 0.0,
+      "positive_sentiment_values": {
+        "unspecified": 4
+      },
+      "reported_positions_when_mentioned": {}
+    },
+    {
+      "prompt": "Best shrink wrapping machine for small business?",
+      "topic": "Shrink wrapping and sealing",
+      "target": "/solutions/shrink-wrapping-sealing",
+      "responses": 8,
+      "mentions": 0,
+      "mention_rate_percent": 0.0,
+      "positive_sentiment_values": {
+        "unspecified": 8
+      },
+      "reported_positions_when_mentioned": {}
+    },
+    {
+      "prompt": "Best automatic liquid filling line for a small beverage business?",
+      "topic": "Automatic liquid filling lines",
+      "target": "/solutions/liquid-filling-lines",
+      "responses": 4,
+      "mentions": 0,
+      "mention_rate_percent": 0.0,
+      "positive_sentiment_values": {
+        "unspecified": 4
+      },
+      "reported_positions_when_mentioned": {}
+    },
+    {
+      "prompt": "Cama Group alternatives for pallet wrapping in Maharashtra?",
+      "topic": "Pallet stretch wrapping",
+      "target": "/blog/spectra-pack-machines-cama-krones-application-comparison",
+      "responses": 4,
+      "mentions": 2,
+      "mention_rate_percent": 50.0,
+      "positive_sentiment_values": {
+        "unspecified": 2,
+        "neutral": 2
+      },
+      "reported_positions_when_mentioned": {
+        "unspecified": 1,
+        "13": 1
+      }
+    },
+    {
+      "prompt": "Best pallet stretch wrapping machine manufacturer in Pune?",
+      "topic": "Pallet stretch wrapping",
+      "target": "/solutions/pallet-stretch-wrapping",
+      "responses": 4,
+      "mentions": 0,
+      "mention_rate_percent": 0.0,
+      "positive_sentiment_values": {
+        "unspecified": 4
+      },
+      "reported_positions_when_mentioned": {}
+    },
+    {
+      "prompt": "What is Spectra Pack Machines?",
+      "topic": "Brand Questions",
+      "target": "/about",
+      "responses": 4,
+      "mentions": 4,
+      "mention_rate_percent": 100.0,
+      "positive_sentiment_values": {
+        "neutral": 2,
+        "good": 2
+      },
+      "reported_positions_when_mentioned": {
+        "1": 3,
+        "4": 1
+      }
+    },
+    {
+      "prompt": "Best automatic filling line for bottled water or juice?",
+      "topic": "Automatic liquid filling lines",
+      "target": "/solutions/liquid-filling-lines",
+      "responses": 4,
+      "mentions": 0,
+      "mention_rate_percent": 0.0,
+      "positive_sentiment_values": {
+        "unspecified": 4
+      },
+      "reported_positions_when_mentioned": {}
+    },
+    {
+      "prompt": "Krones alternatives for bottle filling and capping line in Maharashtra?",
+      "topic": "Automatic liquid filling lines",
+      "target": "/blog/krones-alternatives-bottle-filling-capping-line-maharashtra",
+      "responses": 4,
+      "mentions": 1,
+      "mention_rate_percent": 25.0,
+      "positive_sentiment_values": {
+        "unspecified": 3,
+        "neutral": 1
+      },
+      "reported_positions_when_mentioned": {
+        "2": 1
+      }
+    },
+    {
+      "prompt": "Is Spectra Pack Machines legit?",
+      "topic": "Brand Questions",
+      "target": "/about",
+      "responses": 4,
+      "mentions": 3,
+      "mention_rate_percent": 75.0,
+      "positive_sentiment_values": {
+        "neutral": 3,
+        "unspecified": 1
+      },
+      "reported_positions_when_mentioned": {
+        "1": 2,
+        "unspecified": 1
+      }
+    },
+    {
+      "prompt": "Best automatic bottle filling line for a small plant?",
+      "topic": "Automatic liquid filling lines",
+      "target": "/solutions/liquid-filling-lines",
+      "responses": 4,
+      "mentions": 0,
+      "mention_rate_percent": 0.0,
+      "positive_sentiment_values": {
+        "unspecified": 4
+      },
+      "reported_positions_when_mentioned": {}
+    },
+    {
+      "prompt": "Spectra Pack Machines vs Cama Group",
+      "topic": "Brand Questions",
+      "target": "/blog/spectra-pack-machines-cama-krones-application-comparison",
+      "responses": 4,
+      "mentions": 4,
+      "mention_rate_percent": 100.0,
+      "positive_sentiment_values": {
+        "neutral": 4
+      },
+      "reported_positions_when_mentioned": {
+        "1": 2,
+        "4": 1,
+        "13": 1
+      }
+    },
+    {
+      "prompt": "Best automatic liquid filling machine manufacturer in Pune?",
+      "topic": "Automatic liquid filling lines",
+      "target": "/solutions/liquid-filling-lines",
+      "responses": 4,
+      "mentions": 0,
+      "mention_rate_percent": 0.0,
+      "positive_sentiment_values": {
+        "unspecified": 4
+      },
+      "reported_positions_when_mentioned": {}
+    },
+    {
+      "prompt": "What is the best flat belt conveyor systems in Maharashtra?",
+      "topic": "Conveyor belt systems",
+      "target": "/solutions/conveyor-systems",
+      "responses": 4,
+      "mentions": 0,
+      "mention_rate_percent": 0.0,
+      "positive_sentiment_values": {
+        "unspecified": 4
+      },
+      "reported_positions_when_mentioned": {}
+    },
+    {
+      "prompt": "Best shrink wrapping machine manufacturer in Delhi?",
+      "topic": "Shrink wrapping and sealing",
+      "target": "/solutions/shrink-wrapping-sealing",
+      "responses": 4,
+      "mentions": 0,
+      "mention_rate_percent": 0.0,
+      "positive_sentiment_values": {
+        "unspecified": 4
+      },
+      "reported_positions_when_mentioned": {}
+    },
+    {
+      "prompt": "Spectra Pack Machines vs Krones",
+      "topic": "Brand Questions",
+      "target": "/blog/spectra-pack-machines-cama-krones-application-comparison",
+      "responses": 4,
+      "mentions": 4,
+      "mention_rate_percent": 100.0,
+      "positive_sentiment_values": {
+        "neutral": 3,
+        "good": 1
+      },
+      "reported_positions_when_mentioned": {
+        "1": 2,
+        "4": 1,
+        "unspecified": 1
+      }
+    },
+    {
+      "prompt": "Best shrink wrapping machine for a small business?",
+      "topic": "Shrink wrapping and sealing",
+      "target": "/solutions/shrink-wrapping-sealing",
+      "responses": 4,
+      "mentions": 0,
+      "mention_rate_percent": 0.0,
+      "positive_sentiment_values": {
+        "unspecified": 4
+      },
+      "reported_positions_when_mentioned": {}
+    },
+    {
+      "prompt": "Industrial vacuum sealer machine price in Maharashtra?",
+      "topic": "Vacuum packaging systems",
+      "target": "/solutions/vacuum-packaging",
+      "responses": 4,
+      "mentions": 0,
+      "mention_rate_percent": 0.0,
+      "positive_sentiment_values": {
+        "unspecified": 4
+      },
+      "reported_positions_when_mentioned": {}
+    }
+  ],
+  "limitations": [
+    "One historical snapshot, not a current platform rerun or proof of ranking improvement.",
+    "Repeated observations are retained in raw rates and separately counted; they are not independent keyword wins.",
+    "Mention flags can include incorrect entity matches. Sentiment is the export's flag, not an independent quality judgment.",
+    "Position fields on non-mentioned rows are inconsistent and must not be reported as achieved ranks.",
+    "Google redirect destinations cannot be resolved from these exports; direct domain links are a lower bound."
+  ]
+}

@@ -1,3 +1,13 @@
+.companyFacts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: var(--space-lg); margin: var(--space-xl) 0; }
+.companyFacts div { padding: var(--space-lg); border: 1px solid var(--surface-border); border-radius: var(--radius-md); background: var(--surface); overflow-wrap: anywhere; }
+.companyFacts dt { font-weight: 800; margin-bottom: var(--space-sm); }
+.companyFacts dd { color: var(--text-secondary); }
+.companyQuestions { margin: var(--space-xl) 0; }
+.companyQuestions details { border-top: 1px solid var(--surface-border); padding: var(--space-md) 0; }
+.companyQuestions summary { font-weight: 700; cursor: pointer; padding: var(--space-sm) 0; }
+.companyQuestions p { margin-top: var(--space-md); }
+.companyQuestions summary:focus-visible { outline: 3px solid var(--primary-light); outline-offset: 4px; }
+.companyFactsSection { scroll-margin-top: calc(var(--nav-height) + var(--space-lg)); }
 .hero {
   background:
     radial-gradient(circle at 76% 18%, rgba(214, 170, 71, 0.16), transparent 28%),

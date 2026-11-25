@@ -6,6 +6,7 @@ import AnimatedSection from '@/components/ui/AnimatedSection';
 import { Factory, PencilRuler, Wrench, ShieldCheck, Headphones, ArrowRight } from 'lucide-react';
 import styles from './page.module.css';
 import { COMPANY_INFO } from '@/lib/data';
+import SolutionLinks from '@/components/solutions/SolutionLinks';
 
 export const metadata: Metadata = completePageMetadata({
   title: 'Packaging Machine Manufacturing, Installation & Support',
@@ -93,6 +94,7 @@ export default async function ServicesPage() {
         </div>
       </section>
 
+      <SolutionLinks />
       {/* CTA */}
       <section className={styles.cta}>
         <div className="container" style={{ textAlign: 'center' }}>

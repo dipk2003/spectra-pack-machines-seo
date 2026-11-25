@@ -89,6 +89,7 @@ export default function RootLayout({
   return (
     <html lang="en-IN">
       <head>
+        <link rel="describedby" href="/llms.txt" type="text/plain" />
         <Script
           id="sa-dynamic-optimization"
           type="text/javascript"
@@ -107,6 +108,7 @@ export default function RootLayout({
               '@id': `${COMPANY_INFO.website}/#organization`,
               name: COMPANY_INFO.name,
               legalName: COMPANY_INFO.legalName,
+              disambiguatingDescription: 'Industrial packaging machinery manufacturer and supplier in Vasai, Maharashtra, India, serving factory, bottling and warehouse applications.',
               url: COMPANY_INFO.website,
               logo: {
                 '@type': 'ImageObject',
@@ -115,7 +117,7 @@ export default function RootLayout({
                 height: 607,
               },
               image: `${COMPANY_INFO.website}${COMPANY_INFO.logoPath}`,
-              description: 'Manufacturer of shrink wrapping, sealing, vacuum packaging, conveyor, and end-of-line packaging machines in India.',
+              description: 'Industrial packaging machinery business established in 2025 in Vasai, Maharashtra, India. The team brings packaging-industry experience dating to 2001. Equipment includes filling, wrapping, sealing, vacuum packing and conveyors.',
               address: [
                 {
                   '@type': 'PostalAddress',
@@ -176,7 +178,7 @@ export default function RootLayout({
                 name: city.name,
                 containedInPlace: city.region,
               })),
-              knowsAbout: ['Packaging machines', 'Shrink wrapping machines', 'Sealing machines', 'Vacuum packaging machines', 'Conveyor systems', 'Pallet stretch wrapping machines'],
+              knowsAbout: ['Packaging machines', 'Automatic liquid filling lines', 'Bottle capping and labelling', 'Shrink wrapping machines', 'Sealing machines', 'Vacuum packaging machines', 'Conveyor systems', 'Pallet stretch wrapping machines'],
               sameAs: socialProfiles,
               contactPoint: {
                 '@type': 'ContactPoint',

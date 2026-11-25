@@ -1,6 +1,6 @@
 # Spectra Pack Machines
 
-> Spectra Pack Machines is an industrial packaging machinery manufacturer based in the Mumbai region of Maharashtra, India, with a head office in Vasai West and a manufacturing facility in Vasai East, Palghar. The website provides machine information, buying guides, installation and service information, and quotation enquiries for customers across India.
+> Spectra Pack Machines is an industrial packaging machinery manufacturer established in 2025 in Vasai, near Mumbai, Maharashtra, India. The team's prior packaging-industry experience dates to 2001. The head office is in Vasai West and the manufacturing facility in Vasai East, Palghar. The website covers machine selection, product trials, installation, support and quotations across India.
 
 Start with the machine catalog to find equipment for a product and packaging format. Product pages describe the offered configurations; confirm application suitability, output, pricing, delivery, warranty and service scope with the company using the buyer's actual product and container. City pages describe supply and service planning, and do not imply a separate local factory or office.
 
@@ -21,6 +21,15 @@ Start with the machine catalog to find equipment for a product and packaging for
 - [Pallet stretch wrapping machines](https://spectrapackmachines.com/products/category/pallet-stretch-wrapping-machines): Pallet wrapping equipment for dispatch loads.
 - [Carton taping and box strapping](https://spectrapackmachines.com/products/category/automatic-carton-taping-with-box-strapping): End-of-line carton closure and strapping equipment.
 
+## Application and service buying guides
+
+- [Packaging solutions](https://spectrapackmachines.com/solutions): Select equipment by the actual packaging process and prepare a quotation brief.
+- [Pallet stretch wrapping](https://spectrapackmachines.com/solutions/pallet-stretch-wrapping): Small factory and warehouse loads, film trials, space and Pune or Delhi supply enquiries.
+- [Shrink wrapping and sealing](https://spectrapackmachines.com/solutions/shrink-wrapping-sealing): Small-business pack formats, film, automation and supplier comparison.
+- [Automatic liquid filling lines](https://spectrapackmachines.com/solutions/liquid-filling-lines): Water or juice bottle filling, capping, labelling, trials and line scope.
+- [Conveyor systems](https://spectrapackmachines.com/solutions/conveyor-systems): Flat belt, modular, slat and roller conveyors for Maharashtra packaging lines.
+- [Industrial vacuum packaging](https://spectrapackmachines.com/solutions/vacuum-packaging): Chamber and pouch selection, cycle trials and itemized Maharashtra quotations.
+
 ## Services and locations
 
 - [Services](https://spectrapackmachines.com/services): Manufacturing, machine selection, custom design, installation and after-sales support.
@@ -31,6 +40,7 @@ Start with the machine catalog to find equipment for a product and packaging for
 ## Buying and operating guides
 
 - [Blog](https://spectrapackmachines.com/blog): Packaging machine buying, setup and operating guides.
+- [Compare Spectra Pack Machines, Cama Group and Krones](https://spectrapackmachines.com/blog/spectra-pack-machines-cama-krones-application-comparison): Compare suppliers by process and project scope rather than assuming all packaging equipment is equivalent.
 - [Krones alternatives in Maharashtra](https://spectrapackmachines.com/blog/krones-alternatives-bottle-filling-capping-line-maharashtra): Compare bottle filling and capping suppliers, line integration and support questions.
 - [Liquid filling machine manufacturers for Pune](https://spectrapackmachines.com/blog/best-automatic-liquid-filling-machine-manufacturer-in-pune): Compare suppliers by product fit, confirmed output, automation, service and warranty.
 - [Machine selection, capacity and cost](https://spectrapackmachines.com/blog/packaging-machine-selection-cost-capacity-guide): Prepare application details and compare machine quotations.

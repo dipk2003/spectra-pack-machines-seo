@@ -6,6 +6,7 @@ import { parseBlogTemplateContent } from '@/lib/blog-template';
 import { COMPANY_INFO, SEO_CITIES, SEO_CITY_MARKETS, groupProductsByCategory } from '@/lib/data';
 import { INDIA_STATE_MARKETS } from '@/lib/india-markets';
 import { MODEL_GUIDE_PROFILES, MODEL_GUIDE_TOPICS, modelGuideHref } from '@/lib/model-guides';
+import { PACKAGING_SOLUTIONS, PACKAGING_SOLUTIONS_UPDATED_AT } from '@/lib/packaging-solutions';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = COMPANY_INFO.website;
@@ -32,10 +33,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Static pages
   const staticPages = [
-    '', '/about', '/services', '/contact', '/clients', '/blog', '/machines', '/locations', '/schedule-meeting', '/packaging-machines', '/packaging-machines/international', '/privacy-policy'
+    '', '/about', '/services', '/solutions', '/contact', '/clients', '/blog', '/machines', '/locations', '/schedule-meeting', '/packaging-machines', '/packaging-machines/international', '/privacy-policy'
   ].map((path) => ({
     url: `${baseUrl}${path}`,
-    lastModified: path === '/blog' ? blogs.reduce<Date | undefined>((latest, blog) => { const updated = asValidDate(blog.updatedAt || blog.createdAt); return updated && (!latest || updated > latest) ? updated : latest; }, undefined) : undefined,
+    lastModified: path === '/blog' ? blogs.reduce<Date | undefined>((latest, blog) => { const updated = asValidDate(blog.updatedAt || blog.createdAt); return updated && (!latest || updated > latest) ? updated : latest; }, undefined) : ['', '/about', '/services', '/solutions'].includes(path) ? new Date(PACKAGING_SOLUTIONS_UPDATED_AT) : undefined,
     changeFrequency: 'weekly' as const,
     priority: path === '' ? 1 : 0.8,
   }));
@@ -100,6 +101,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const entries = [
     ...staticPages,
+    ...PACKAGING_SOLUTIONS.map(solution => ({ url: `${baseUrl}/solutions/${solution.slug}`, lastModified: new Date(PACKAGING_SOLUTIONS_UPDATED_AT), changeFrequency: 'monthly' as const, priority: 0.85 })),
     ...servicePages,
     ...stateHubPages,
     ...cityHubPages,

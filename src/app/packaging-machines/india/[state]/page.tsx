@@ -124,7 +124,7 @@ export default async function StatePackagingMachinesPage({ params }: Props) {
             <div className={styles.proofStrip}>
               <div><strong>Direct manufacturer</strong><span>Factory in Vasai, Maharashtra</span></div>
               <div><strong>{market.majorMarkets.length} key markets</strong><span>State-wide delivery planning</span></div>
-              <div><strong>{COMPANY_INFO.yearsOfExperience}+ years</strong><span>Packaging machine experience</span></div>
+              <div><strong>{COMPANY_INFO.yearsOfExperience}+ years</strong><span>Team packaging-industry experience</span></div>
             </div>
           </AnimatedSection>
         </div>
