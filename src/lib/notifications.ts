@@ -1,6 +1,6 @@
 import { randomBytes } from 'crypto';
 import { COMPANY_INFO } from './data';
-import { sendEmail } from './email';
+import { sendCustomerEmail, sendEmail } from './email';
 import { getSiteOrigin } from './runtime-config';
 import { leadNotificationSource } from './lead-notification-source';
 
@@ -150,7 +150,7 @@ export async function sendCatalogEmail(input: {
     ? `<p style="margin:0 0 16px;">Requested machine interest: <strong>${escapeHtml(input.machineInterest)}</strong></p>`
     : '';
 
-  return sendEmail({
+  return sendCustomerEmail({
     to: input.email,
     replyTo: COMPANY_INFO.email[0],
     subject: 'Your Spectra Pack catalog is ready',
@@ -178,7 +178,7 @@ export async function sendLeadThankYouEmail(input: {
     ? `<p style="margin:0 0 16px;">We have noted your interest in <strong>${escapeHtml(input.machineInterest)}</strong>.</p>`
     : '';
 
-  return sendEmail({
+  return sendCustomerEmail({
     to: input.email,
     replyTo: COMPANY_INFO.email[0],
     subject: 'Thank you for contacting Spectra Pack Machines',
