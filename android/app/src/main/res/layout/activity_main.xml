@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="#063C32">
+    <Toolbar android:id="@+id/toolbar" android:layout_width="match_parent" android:layout_height="48dp" android:background="#063C32" android:title="Spectra CRM" android:titleTextColor="#FFFFFF" />
+    <ProgressBar android:id="@+id/progress" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="3dp" android:max="100" android:progressTint="#E59B27" android:contentDescription="Loading CRM" />
+    <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:background="#FFFFFF">
+        <WebView android:id="@+id/webview" android:layout_width="match_parent" android:layout_height="match_parent" />
+        <LinearLayout android:id="@+id/error_panel" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="32dp" android:background="#FFFFFF" android:visibility="gone">
+            <ImageView android:layout_width="96dp" android:layout_height="96dp" android:src="@drawable/company_logo" android:contentDescription="Spectra Pack Machines" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:text="Could not load your CRM" android:textSize="22sp" android:textStyle="bold" android:textColor="#102A24" android:gravity="center" android:accessibilityHeading="true" />
+            <TextView android:id="@+id/error_message" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Check your internet connection, then try again." android:textSize="16sp" android:textColor="#52615D" android:gravity="center" />
+            <Button android:id="@+id/retry" android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="24dp" android:text="Try again" android:textAllCaps="false" />
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>

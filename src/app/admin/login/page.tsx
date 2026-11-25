@@ -107,7 +107,7 @@ export default function AdminLoginPage() {
           email: form.email.trim(),
           password: form.password,
           redirect: false,
-          callbackUrl: `${window.location.origin}/admin`,
+          callbackUrl: `${window.location.origin}${/SpectraCRM\//i.test(navigator.userAgent) || window.matchMedia('(max-width: 680px)').matches ? '/admin/mobile' : '/admin'}`,
         }),
       );
 

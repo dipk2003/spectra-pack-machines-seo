@@ -105,6 +105,10 @@ const RATE_LIMIT_PRESETS: Record<string, RateLimitPreset> = {
     windowMs: 5 * 60 * 1000,
     message: 'Too many analytics events. Please wait before sending more.',
   },
+  workReporting: {
+    key: 'crm-work-reporting-v1', limit: 600, windowMs: 5 * 60 * 1000,
+    message: 'Too many work updates. Please wait before retrying.',
+  },
   adminWrites: {
     key: 'admin-writes',
     limit: 60,

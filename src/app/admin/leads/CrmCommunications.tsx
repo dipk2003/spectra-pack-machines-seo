@@ -5,6 +5,8 @@ import { ExternalLink, Mail, MessageCircle, Phone, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { CrmActivity, CrmLead } from '@/lib/crm-types';
 import { crmCommunicationUrl } from '@/lib/crm-policy';
+import { openNativeContact } from '@/lib/crm-native';
+import { useWorkTracking } from '@/components/admin/WorkTracking';
 import styles from './page.module.css';
 
 type Channel = 'call' | 'whatsapp' | 'email';
@@ -24,6 +26,8 @@ export default function CrmCommunications({
   phoneCalling,
   onActivity,
   requestIds,
+  initialChannel,
+  mobile = false,
 }: {
   lead: CrmLead;
   emailSending: boolean;
@@ -33,20 +37,41 @@ export default function CrmCommunications({
   phoneCalling: boolean;
   onActivity: (activity: CrmActivity) => void;
   requestIds: Map<string, string>;
+  initialChannel?: Channel;
+  mobile?: boolean;
 }) {
-  const [channel, setChannel] = useState<Channel>(lead.phone ? 'whatsapp' : 'email');
+  const work = useWorkTracking();
+  const [channel, setChannel] = useState<Channel>(initialChannel || (lead.phone ? 'whatsapp' : 'email'));
   const [subject, setSubject] = useState(`Your ${lead.machineInterest || 'packaging machine'} enquiry — Spectra Pack`);
   const [body, setBody] = useState(`Hello ${lead.name}, thank you for your enquiry about ${lead.machineInterest || 'packaging machines'}. Could you share your product, pack size and required production capacity so we can help you choose a suitable machine?`);
-  const [emailMode, setEmailMode] = useState<'app' | 'crm' | 'gmail' | 'outlook'>(emailSending ? 'crm' : 'gmail');
+  const [emailMode, setEmailMode] = useState<'app' | 'crm' | 'gmail' | 'outlook'>(mobile ? 'app' : emailSending ? 'crm' : 'gmail');
   // Prefer the API only when a template is configured for leads outside the
   // service window. Otherwise, let staff open WhatsApp with a safe draft.
-  const [whatsappMode, setWhatsappMode] = useState<'app' | 'crm'>(whatsappSending && whatsappTemplateSending ? 'crm' : 'app');
+  const [whatsappMode, setWhatsappMode] = useState<'app' | 'crm'>(!mobile && whatsappSending && whatsappTemplateSending ? 'crm' : 'app');
   const [whatsappMessageType, setWhatsappMessageType] = useState<'text' | 'template'>(whatsappTemplateSending ? 'template' : 'text');
   const [template, setTemplate] = useState('requirements');
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
   const [launchUrl, setLaunchUrl] = useState('');
-  const [callMode, setCallMode] = useState<'device' | 'crm'>(phoneCalling ? 'crm' : 'device');
+  const [callMode, setCallMode] = useState<'device' | 'crm'>(!mobile && phoneCalling ? 'crm' : 'device');
+  const [outcomeChannel, setOutcomeChannel] = useState<Channel | null>(null);
+  const [outcomeSaved, setOutcomeSaved] = useState(false);
+  const reportOutcome = async (completed: boolean) => {
+    if (!outcomeChannel || busy) return;
+    setBusy(true);
+    try {
+      const response = await fetch(`/api/crm/leads/${encodeURIComponent(lead.id)}/activities`, {
+        method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activityType: outcomeChannel, body: `${outcomeChannel === 'call' ? 'Phone call' : outcomeChannel === 'whatsapp' ? 'WhatsApp message' : 'Email'} outcome reported by employee: ${completed ? 'completed' : 'not completed / no response'}.`, contactStatus: completed ? 'completed' : 'attempted', outcome: completed ? 'Employee reported completed' : 'Employee reported not completed' }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Could not save the outcome.');
+      if (data.activity) onActivity(data.activity);
+      await work.event({ eventType: 'contact_outcome', leadId: lead.id, channel: outcomeChannel, outcome: completed ? 'Employee reported completed' : 'Employee reported not completed' });
+      setOutcomeSaved(true); toast.success('Outcome saved');
+    } catch (error) { toast.error(error instanceof Error ? error.message : 'Could not save the outcome.'); }
+    finally { setBusy(false); }
+  };
   const [callRequested, setCallRequested] = useState(false);
   const callFingerprint = JSON.stringify({ leadId: lead.id, recipient: lead.phone, channel: 'call', action: 'send' });
 
@@ -80,7 +105,7 @@ export default function CrmCommunications({
     }
     // Reserve a browsing context during the click so the provider launch is not blocked after the API response.
     const webmail = channel === 'email' && (emailMode === 'gmail' || emailMode === 'outlook');
-    const popup = (channel === 'whatsapp' && whatsappMode === 'app') || webmail ? window.open('about:blank', '_blank') : null;
+    const popup = !window.SpectraCRM && ((channel === 'whatsapp' && whatsappMode === 'app') || webmail) ? window.open('about:blank', '_blank') : null;
     if (popup) popup.opener = null;
     setBusy(true);
     setNotice('');
@@ -126,10 +151,14 @@ export default function CrmCommunications({
             : `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(lead.email)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
           : result.launchUrl;
         setLaunchUrl(destination);
+        setOutcomeChannel(channel); setOutcomeSaved(false);
         setNotice(channel === 'call'
           ? 'If no calling app opened, use the direct dial link below or call this number from your mobile. A call connection has not been confirmed.'
           : 'App launch requested. Complete the message in the app, then record the result below.');
-        if (channel === 'whatsapp' || webmail) {
+        if (window.SpectraCRM) {
+          await openNativeContact(destination);
+          await work.event({ eventType: 'client_opened', leadId: lead.id, channel });
+        } else if (channel === 'whatsapp' || webmail) {
           if (popup) popup.location.replace(destination);
         } else {
           window.location.assign(result.launchUrl);
@@ -137,6 +166,7 @@ export default function CrmCommunications({
       }
     } catch (error) {
       popup?.close();
+      if (action === 'launch') void work.event({ eventType: 'client_open_failed', leadId: lead.id, channel });
       toast.error(error instanceof Error ? error.message : 'Communication failed.');
     } finally {
       setBusy(false);
@@ -159,7 +189,7 @@ export default function CrmCommunications({
         <p className={styles.contactRecipient}>To: <strong>{channel === 'email' ? lead.email || 'Email not added' : lead.phone || 'Phone not added'}</strong></p>
         {channel === 'call' && <>
           <label><span>Call using</span><select value={callMode} disabled={busy} onChange={event => { setCallMode(event.target.value as 'device' | 'crm'); setNotice(''); setLaunchUrl(''); }}><option value="device">My device dialer</option><option value="crm" disabled={!phoneCalling}>CRM callback (Plivo){!phoneCalling ? ' — setup required' : ''}</option></select></label>
-          {!phoneCalling && <p className={styles.inlineWarning}>CRM calling needs a connected Plivo account and your registered callback mobile. Contact the administrator to activate it.</p>}
+          {!phoneCalling && !mobile && <p className={styles.communicationHint}>Use the device dialer to call from this phone.</p>}
         </>}
         {channel === 'whatsapp' && <label><span>Send using</span><select value={whatsappMode} onChange={(event) => { setWhatsappMode(event.target.value as typeof whatsappMode); setNotice(''); setLaunchUrl(''); }} disabled={busy}><option value="app">WhatsApp app with draft</option>{whatsappSending && <option value="crm">WhatsApp Cloud API</option>}</select></label>}
         {channel === 'whatsapp' && whatsappMode === 'crm' && <label><span>WhatsApp message type</span><select value={whatsappMessageType} onChange={event => setWhatsappMessageType(event.target.value as 'text' | 'template')} disabled={busy}><option value="text">Free-form reply (24-hour window)</option><option value="template" disabled={!whatsappTemplateSending}>Approved template{whatsappTemplateSending ? '' : ' - awaiting template setup'}</option></select></label>}
@@ -186,6 +216,10 @@ export default function CrmCommunications({
         {notice && <p className={styles.communicationNotice} role="status">{notice}</p>}
         {launchUrl && <a className={styles.continueLink} href={launchUrl} target={launchUrl.startsWith('https:') ? '_blank' : undefined} rel="noopener noreferrer">{channel === 'call' ? 'Open dialer again' : channel === 'whatsapp' ? 'Continue to WhatsApp' : 'Continue to email'} <ExternalLink size={13} /></a>}
       </form>
+      {outcomeChannel && !outcomeSaved && <div className={styles.communicationForm} role="group" aria-label="Record contact outcome">
+        <strong>How did it go?</strong><p className={styles.communicationHint}>This is your reported result. Opening an app alone does not confirm a call or sent message.</p>
+        <div className={styles.quickActions}><button type="button" disabled={busy} onClick={() => void reportOutcome(true)}>{outcomeChannel === 'call' ? 'Connected' : 'Message sent'}</button><button type="button" disabled={busy} onClick={() => void reportOutcome(false)}>{outcomeChannel === 'call' ? 'No answer / cancelled' : 'Not sent'}</button></div>
+      </div>}
     </section>
   );
 }

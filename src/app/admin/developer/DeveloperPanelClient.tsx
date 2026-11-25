@@ -28,6 +28,7 @@ import {
 import type { DeveloperPanelData } from '@/lib/developer-panel';
 import { LEAD_STATUSES, LEAD_STATUS_LABELS } from '@/lib/lead-status';
 import styles from './page.module.css';
+import WorkforcePanel from './WorkforcePanel';
 
 type DeveloperPanelClientProps = {
   initialData: DeveloperPanelData;
@@ -193,6 +194,7 @@ export default function DeveloperPanelClient({ initialData }: DeveloperPanelClie
       <div className={styles.timestamp}>
         <Clock3 size={14} /> Last generated {formatDateTime(data.generatedAt)}
       </div>
+      <WorkforcePanel />
 
       {data.access.fallbackWarning && (
         <div className={`${styles.notice} ${styles.warningNotice}`}>

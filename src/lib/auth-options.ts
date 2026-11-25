@@ -10,6 +10,7 @@ import {
 } from '@/lib/supabase';
 import { assertSecureAuthConfig, getNextAuthSecret } from '@/lib/runtime-config';
 import { OperationTimeoutError, withTimeout } from '@/lib/async-timeout';
+import { recordCrmAuthEvent } from '@/lib/crm-work';
 
 const SUPABASE_LOGIN_TIMEOUT_MS = 10_000;
 
@@ -24,10 +25,14 @@ export const authOptions: NextAuthOptions = {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) return null;
 
         const normalizedEmail = credentials.email.trim().toLowerCase();
+        const accepted = async (user: { id: string; email: string; name: string; role: string }) => {
+          await withTimeout(recordCrmAuthEvent({ userId: user.id, email: user.email, displayName: user.name, role: user.role }, 'sign_in', String(req.headers?.['user-agent'] || '')), 2000, 'Sign-in audit').catch(() => undefined);
+          return user;
+        };
 
         try {
           assertSecureAuthConfig();
@@ -46,7 +51,7 @@ export const authOptions: NextAuthOptions = {
             if (!error && data.user) {
               const adminUser = await getAdminUserByUserId(data.user.id);
               if (adminUser) {
-                return {
+                return accepted({
                   id: data.user.id,
                   email: data.user.email || adminUser.email,
                   name:
@@ -55,7 +60,7 @@ export const authOptions: NextAuthOptions = {
                     data.user.email ||
                     'Admin',
                   role: adminUser.role,
-                };
+                });
               }
             }
           }
@@ -72,12 +77,12 @@ export const authOptions: NextAuthOptions = {
           const configuredAdmin = getConfiguredEnvAdmin();
 
           if (configuredAdmin) {
-            return {
+            return accepted({
               id: configuredAdmin.id,
               email: configuredAdmin.email,
               name: configuredAdmin.displayName,
               role: configuredAdmin.role,
-            };
+            });
           }
         }
 
@@ -85,6 +90,14 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+  events: {
+    async signOut(message) {
+      if ('token' in message && message.token && typeof message.token.id === 'string') {
+        const token = message.token;
+        await withTimeout(recordCrmAuthEvent({ userId: token.id as string, email: String(token.email || ''), displayName: String(token.name || ''), role: String(token.role || '') }, 'sign_out'), 2000, 'Sign-out audit').catch(() => undefined);
+      }
+    },
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {

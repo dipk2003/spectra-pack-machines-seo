@@ -1,0 +1,5 @@
+.status { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; color:#55665f; font-size:.75rem; }
+.label { display:inline-flex; align-items:center; gap:.35rem; }
+.toggle { min-height:40px; padding:.4rem .65rem; border:1px solid #d3e3da; border-radius:8px; background:#fff; color:#075243; font:inherit; font-weight:700; cursor:pointer; }
+.status p,.status small { flex-basis:100%; margin:0; line-height:1.6; }
+.status small { color:#996314; }

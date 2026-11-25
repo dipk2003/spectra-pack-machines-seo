@@ -135,7 +135,8 @@ export async function middleware(req: NextRequest) {
         !isCrmOwnerRole(adminUser.role) &&
         pathname !== '/admin/leads' &&
         pathname !== '/admin/leads/' &&
-        !pathname.startsWith('/admin/leads/')
+        !pathname.startsWith('/admin/leads/') &&
+        pathname !== '/admin/mobile' && pathname !== '/admin/mobile/'
       ) {
         return addPrivateAdminHeaders(
           NextResponse.redirect(new URL('/admin/leads', req.url)),

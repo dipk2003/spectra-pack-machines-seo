@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import { cleanWorkPath, locationIsFresh, validLocation, workPlatform } from '../src/lib/crm-work-policy';
+const now = Date.parse('2026-11-25T12:00:00Z');
+assert.equal(workPlatform('Mozilla Android SpectraCRM/1.1'), 'android');
+assert.equal(workPlatform('Mozilla Android Mobile'), 'mobile_web');
+assert.equal(workPlatform('Mozilla Windows Chrome'), 'desktop');
+assert.equal(cleanWorkPath('/admin/mobile?lead=private#note'), '/admin/mobile');
+assert.equal(cleanWorkPath('https://external.test/admin'), '');
+assert.equal(cleanWorkPath('/admin/../api/private'), '');
+assert.equal(cleanWorkPath('/administrator'), '');
+assert.equal(locationIsFresh(new Date(now - 60000).toISOString(), new Date(now - 5000).toISOString(), now), true);
+assert.equal(locationIsFresh(new Date(now - 180000).toISOString(), new Date(now).toISOString(), now), false);
+assert.equal(locationIsFresh(new Date(now).toISOString(), new Date(now - 180000).toISOString(), now), false);
+const point = {latitude:0,longitude:0,accuracy:50,capturedAt:new Date(now).toISOString()};
+assert.equal(validLocation(point, now).latitude, 0);
+for (const invalid of [{...point,latitude:91},{...point,longitude:-181},{...point,latitude:NaN},{...point,accuracy:-1},{...point,accuracy:10001},{...point,capturedAt:new Date(now-121000).toISOString()},{...point,capturedAt:new Date(now+61000).toISOString()},{...point,capturedAt:'invalid'}]) assert.throws(()=>validLocation(invalid,now));
+console.log('Work visibility platform, path privacy, coordinate and freshness checks passed.');
