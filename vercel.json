@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [{ "path": "/api/cron/ads-sync", "schedule": "15 2 * * *" }],
   "env": {
-    "DEVELOPER_OWNER_USER_ID": "cf900558-1466-4b3f-b394-78a453fc5989",
+    "DEVELOPER_OWNER_USER_ID": "cb10022d-c645-4ed3-acc0-b8a4895a1293",
     "DEVELOPER_ADMIN_NAME": "dipanshu",
     "NEXT_PUBLIC_GA_MEASUREMENT_ID": "G-49TN7HKQEX",
     "NEXT_PUBLIC_GOOGLE_ADS_ID": "AW-18443957872",
