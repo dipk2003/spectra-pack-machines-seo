@@ -12,3 +12,12 @@ next-env.d.ts
 .vercel
 .env*
 !.env.example
+
+# Local Android tools, private app signing identity, and generated APKs.
+.toolchains/
+.android-signing/
+artifacts/
+android/.build/
+android/.gradle/
+android/local.properties
+android/**/build/
