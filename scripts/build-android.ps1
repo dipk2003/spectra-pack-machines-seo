@@ -44,7 +44,7 @@ foreach ($taskFolder in @('generated','classes','dex','policy-tests')) { New-Ite
 Invoke-Checked 'javac' @('--release','8','-d',"$taskBuild/policy-tests","$taskSource/java/com/spectrapackmachines/crm/CrmUrls.java","$taskProject/android/tests/CrmUrlsTest.java")
 Invoke-Checked 'java' @('-cp',"$taskBuild/policy-tests",'com.spectrapackmachines.crm.CrmUrlsTest')
 Push-Location $taskProject
-try { Invoke-Checked 'node' @('android/tests/exports.test.cjs') } finally { Pop-Location }
+try { Invoke-Checked 'node' @('android/tests/exports.test.cjs'); Invoke-Checked 'node' @('android/tests/mobile.test.cjs') } finally { Pop-Location }
 
 Invoke-Checked $taskAapt @('compile','--dir',"$taskSource/res",'-o',"$taskBuild/resources.zip")
 Invoke-Checked $taskAapt @('link','-o',"$taskBuild/unsigned.apk",'-I',$taskAndroidJar,'--manifest',"$taskSource/AndroidManifest.xml",'--java',"$taskBuild/generated",'--min-sdk-version','26','--target-sdk-version','36','-R',"$taskBuild/resources.zip",'--auto-add-overlay')
@@ -75,12 +75,15 @@ try {
     if (!(Test-Path -LiteralPath $taskKey)) {
         Invoke-Checked 'keytool' @('-genkeypair','-storetype','PKCS12','-keystore',$taskKey,'-alias',$taskIdentity.alias,'-keyalg','RSA','-keysize','3072','-sigalg','SHA256withRSA','-validity','10000','-dname','CN=Spectra Pack Machines,O=Spectra Pack Machines,C=IN','-storepass:env','SPECTRA_APK_SIGNING_PASS','-keypass:env','SPECTRA_APK_SIGNING_PASS','-noprompt')
     }
-    $taskApk = Join-Path $taskArtifacts 'Spectra-CRM-1.0.0.apk'
+    $taskManifest = [xml](Get-Content -LiteralPath "$taskSource/AndroidManifest.xml" -Raw)
+    $taskVersion = $taskManifest.manifest.GetAttribute('versionName','http://schemas.android.com/apk/res/android')
+    $taskApkName = "Spectra-CRM-$taskVersion.apk"
+    $taskApk = Join-Path $taskArtifacts $taskApkName
     Invoke-Checked "$taskBin/apksigner.bat" @('sign','--ks',$taskKey,'--ks-key-alias',$taskIdentity.alias,'--ks-pass','env:SPECTRA_APK_SIGNING_PASS','--key-pass','env:SPECTRA_APK_SIGNING_PASS','--out',$taskApk,"$taskBuild/aligned.apk")
     Invoke-Checked "$taskBin/apksigner.bat" @('verify','--verbose','--print-certs',$taskApk)
     Invoke-Checked "$taskBin/zipalign.exe" @('-c','4',$taskApk)
     Invoke-Checked "$taskBin/aapt.exe" @('dump','badging',$taskApk)
     $taskHash = (Get-FileHash -LiteralPath $taskApk -Algorithm SHA256).Hash.ToLowerInvariant()
-    "$taskHash  Spectra-CRM-1.0.0.apk" | Set-Content -LiteralPath "$taskApk.sha256" -Encoding ascii
+    "$taskHash  $taskApkName" | Set-Content -LiteralPath "$taskApk.sha256" -Encoding ascii
     Write-Output "APK ready: $taskApk"
 } finally { Remove-Item Env:SPECTRA_APK_SIGNING_PASS -ErrorAction SilentlyContinue }

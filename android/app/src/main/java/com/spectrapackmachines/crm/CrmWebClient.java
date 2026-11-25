@@ -13,9 +13,10 @@ final class CrmWebClient extends WebViewClient {
     }
     private final Screen screen;
     private final CrmDownloads downloads;
+    private final CrmMobileBridge mobile;
     private boolean failed;
 
-    CrmWebClient(Screen screen, CrmDownloads downloads) { this.screen = screen; this.downloads = downloads; }
+    CrmWebClient(Screen screen, CrmDownloads downloads, CrmMobileBridge mobile) { this.screen = screen; this.downloads = downloads; this.mobile = mobile; }
 
     @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
         if (!request.isForMainFrame()) return false;
@@ -28,13 +29,14 @@ final class CrmWebClient extends WebViewClient {
     @Override public void onPageStarted(WebView view, String address, Bitmap icon) {
         failed = false;
         downloads.detach();
+        mobile.detach();
         if (!CrmUrls.isInternalNavigation(address)) { view.stopLoading(); failed = true; screen.error("Open this link using your phone's browser."); return; }
         screen.loading();
     }
 
     @Override public void onPageFinished(WebView view, String address) {
         screen.finished(!failed);
-        if (!failed && CrmUrls.isCrmPage(address)) downloads.attach(view);
+        if (!failed && CrmUrls.isCrmPage(address)) { downloads.attach(view); mobile.attach(); }
         CookieManager.getInstance().flush();
     }
 

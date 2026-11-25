@@ -18,6 +18,7 @@ public final class MainActivity extends Activity implements CrmWebClient.Screen,
     private View errorPanel;
     private TextView errorMessage;
     private CrmDownloads downloads;
+    private CrmMobileBridge mobile;
     private ValueCallback<Uri[]> upload;
     private File pendingExport;
 
@@ -45,6 +46,7 @@ public final class MainActivity extends Activity implements CrmWebClient.Screen,
         errorMessage = findViewById(R.id.error_message);
         findViewById(R.id.retry).setOnClickListener(view -> reload());
         downloads = new CrmDownloads(this, this);
+        mobile = new CrmMobileBridge(this, web, this::launchContact);
         configureWebView();
         if (Build.VERSION.SDK_INT >= 33) getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::handleBack);
         String last = state == null ? null : state.getString("crmPath");
@@ -66,10 +68,10 @@ public final class MainActivity extends Activity implements CrmWebClient.Screen,
         settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         settings.setSupportMultipleWindows(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
-        settings.setUserAgentString(settings.getUserAgentString() + " SpectraCRM/1.0");
+        settings.setUserAgentString(settings.getUserAgentString() + " SpectraCRM/1.1");
         CookieManager.getInstance().setAcceptCookie(true);
         CookieManager.getInstance().setAcceptThirdPartyCookies(web, false);
-        web.setWebViewClient(new CrmWebClient(this, downloads));
+        web.setWebViewClient(new CrmWebClient(this, downloads, mobile));
         web.setDownloadListener((url, agent, disposition, mime, size) -> downloads.download(web, url, agent, disposition, mime));
         web.setWebChromeClient(new WebChromeClient() {
             @Override public void onProgressChanged(WebView view, int value) { progress.setProgress(value); }
@@ -104,18 +106,21 @@ public final class MainActivity extends Activity implements CrmWebClient.Screen,
     }
 
     @Override public void loading() { errorPanel.setVisibility(View.GONE); progress.setVisibility(View.VISIBLE); }
-    @Override public void finished(boolean success) { progress.setVisibility(View.GONE); if (success) errorPanel.setVisibility(View.GONE); }
+    @Override public void finished(boolean success) { progress.setVisibility(View.GONE); if (success) errorPanel.setVisibility(View.GONE); findViewById(R.id.toolbar).setVisibility(web.getUrl() != null && web.getUrl().contains("/admin/mobile") ? View.GONE : View.VISIBLE); }
     @Override public void error(String message) { progress.setVisibility(View.GONE); errorMessage.setText(message); errorPanel.setVisibility(View.VISIBLE); }
     @Override public void failed(String message) { if (!isFinishing()) Toast.makeText(this, message, Toast.LENGTH_LONG).show(); }
 
     @Override public void external(String address) {
-        if (!CrmUrls.isExternalLink(address)) return;
+        launchContact(address);
+    }
+    private boolean launchContact(String address) {
+        if (!CrmUrls.isExternalLink(address)) return false;
         Uri uri = Uri.parse(address);
         String action = "tel".equalsIgnoreCase(uri.getScheme()) ? Intent.ACTION_DIAL : "mailto".equalsIgnoreCase(uri.getScheme()) ? Intent.ACTION_SENDTO : Intent.ACTION_VIEW;
         Intent intent = new Intent(action, uri);
         if ("https".equalsIgnoreCase(uri.getScheme())) intent.addCategory(Intent.CATEGORY_BROWSABLE);
-        try { startActivity(intent); }
-        catch (ActivityNotFoundException ignored) { failed("No compatible app is installed to open this link."); }
+        try { startActivity(intent); return true; }
+        catch (ActivityNotFoundException ignored) { failed("No compatible app is installed to open this link."); return false; }
     }
 
     @Override public void ready(File file, String name, String mime) {
@@ -152,7 +157,7 @@ public final class MainActivity extends Activity implements CrmWebClient.Screen,
 
     private void handleBack() {
         if (!CrmUrls.isCrmPage(web.getUrl())) { goBack(); return; }
-        String script = "(function(){var dialog=document.querySelector('[data-crm-dialog][aria-modal=true]');if(dialog){window.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));return true;}var menu=document.querySelector('button[aria-label=\"Close admin navigation\"]');if(menu){menu.click();return true;}return false;})()";
+        String script = "(function(){if(!window.dispatchEvent(new Event('spectra-native-back',{cancelable:true})))return true;var dialog=document.querySelector('[data-crm-dialog][aria-modal=true]');if(dialog){window.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));return true;}var menu=document.querySelector('button[aria-label=\"Close admin navigation\"]');if(menu){menu.click();return true;}return false;})()";
         web.evaluateJavascript(script, consumed -> { if (!"true".equals(consumed)) goBack(); });
     }
 
@@ -167,10 +172,11 @@ public final class MainActivity extends Activity implements CrmWebClient.Screen,
         if (CrmUrls.isCrmPage(web.getUrl())) state.putString("crmPath", CrmUrls.ORIGIN + Uri.parse(web.getUrl()).getPath());
         super.onSaveInstanceState(state);
     }
-    @Override protected void onPause() { web.onPause(); CookieManager.getInstance().flush(); super.onPause(); }
-    @Override protected void onResume() { super.onResume(); if (web != null) web.onResume(); }
+    @Override protected void onPause() { mobile.pause(); web.onPause(); CookieManager.getInstance().flush(); super.onPause(); }
+    @Override protected void onResume() { super.onResume(); if (web != null) web.onResume(); if (mobile != null) mobile.resume(); }
+    @Override public void onRequestPermissionsResult(int request, String[] permissions, int[] results) { super.onRequestPermissionsResult(request, permissions, results); if (request == CrmMobileBridge.LOCATION_PERMISSION) mobile.permissionsResult(); }
     @Override protected void onDestroy() {
         if (upload != null) upload.onReceiveValue(null);
-        downloads.close(); web.stopLoading(); web.destroy(); super.onDestroy();
+        mobile.detach(); downloads.close(); web.stopLoading(); web.destroy(); super.onDestroy();
     }
 }

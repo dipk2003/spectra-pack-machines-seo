@@ -5,7 +5,7 @@ import java.net.URI;
 /** Shared navigation policy; no app credentials or API secrets are embedded. */
 public final class CrmUrls {
     public static final String ORIGIN = "https://spectrapackmachines.com";
-    public static final String HOME = ORIGIN + "/admin/leads";
+    public static final String HOME = ORIGIN + "/admin/mobile";
     private CrmUrls() { }
 
     public static boolean isTrustedOrigin(String value) {

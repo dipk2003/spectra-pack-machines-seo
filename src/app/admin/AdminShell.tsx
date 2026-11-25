@@ -21,6 +21,7 @@ import {
 import { COMPANY_INFO } from '@/lib/data';
 import { isCrmOwnerRole } from '@/lib/crm-types';
 import styles from './layout.module.css';
+import { WorkTrackingProvider, WorkTrackingStatus } from '@/components/admin/WorkTracking';
 
 type AdminShellProps = {
   children: React.ReactNode;
@@ -73,6 +74,9 @@ function AdminShellInner({
 
   if (status === 'loading') {
     return <div className={styles.loading}>Loading secure admin…</div>;
+  }
+  if (pathname === '/admin/mobile' || pathname === '/admin/mobile/') {
+    return <>{hiddenSiteChrome}{children}</>;
   }
 
   const isNavItemActive = (href: string) =>
@@ -163,6 +167,7 @@ function AdminShellInner({
             <Menu size={24} />
           </button>
           <span className={styles.workspaceTitle}>Spectra Pack <span>/</span> Sales workspace</span>
+          <WorkTrackingStatus />
           <Link href="/" className={styles.viewSite} target="_blank" rel="noopener noreferrer">
             View Website →
           </Link>
@@ -189,9 +194,9 @@ export default function AdminShell({
 }: AdminShellProps) {
   return (
     <SessionProvider session={session} refetchOnWindowFocus={false}>
-      <AdminShellInner canAccessDeveloper={canAccessDeveloper}>
+      <WorkTrackingProvider><AdminShellInner canAccessDeveloper={canAccessDeveloper}>
         {children}
-      </AdminShellInner>
+      </AdminShellInner></WorkTrackingProvider>
     </SessionProvider>
   );
 }
