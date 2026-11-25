@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { dispatchLeadNotifications } from '@/lib/lead-notifications';
 
 type MetaField = { name?: unknown; values?: unknown };
 type MetaLead = { id?: unknown; form_id?: unknown; ad_id?: unknown; created_time?: unknown; field_data?: unknown };
@@ -123,7 +124,7 @@ async function ingest(lead: MetaLead, form: MetaFormRef): Promise<'created' | 'd
     .select('external_id').eq('provider', 'meta-ads').eq('external_id', leadId).maybeSingle();
   if (lookupError) throw new Error('Meta lead deduplication check failed. Ensure the CRM ad lead ingestion migration is installed.');
   if (existing) return 'duplicate';
-  const { error } = await db.rpc('crm_ingest_external_lead', {
+  const { data: savedLeadId, error } = await db.rpc('crm_ingest_external_lead', {
     p_provider: 'meta-ads', p_external_id: leadId,
     p_lead: {
       name, email, phone, company: fields.get('company_name') || fields.get('company') || '', machineInterest,
@@ -135,6 +136,7 @@ async function ingest(lead: MetaLead, form: MetaFormRef): Promise<'created' | 'd
     },
   });
   if (error) throw new Error('Meta lead storage failed. Check that the CRM ad lead ingestion migration is installed.');
+  if (savedLeadId) await dispatchLeadNotifications(String(savedLeadId));
   return 'created';
 }
 

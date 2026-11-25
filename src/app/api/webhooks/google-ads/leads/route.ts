@@ -2,11 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { secureEqual, readWebhookBody } from '@/lib/provider-webhooks';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { CRM_PRIVATE_HEADERS } from '@/lib/crm-http';
+import { dispatchLeadNotifications } from '@/lib/lead-notifications';
 
 export const dynamic = 'force-dynamic';
 
 const text = (value: unknown, limit = 500) => typeof value === 'string'
   ? value.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, limit) : '';
+const providerId = (value: unknown) => typeof value === 'number' && Number.isSafeInteger(value)
+  ? String(value) : text(value, 160);
 const fail = (status: number, message: string) => new NextResponse(message, { status, headers: CRM_PRIVATE_HEADERS });
 
 export async function POST(req: NextRequest) {
@@ -49,10 +52,11 @@ export async function POST(req: NextRequest) {
       name: fullName, email, phone,
       company: values.get('company_name') || values.get('company') || '',
       machineInterest: values.get('machine_interest') || '',
-      campaignId: text(payload.campaign_id, 160), formId: text(payload.form_id, 160),
-      message: [`Google Ads lead form ${text(payload.form_id, 100)}; campaign ${text(payload.campaign_id, 100)}.`, ...extra].join('\n').slice(0, 4000),
+      campaignId: providerId(payload.campaign_id), formId: providerId(payload.form_id),
+      message: [`Google Ads lead form ${providerId(payload.form_id)}; campaign ${providerId(payload.campaign_id)}.`, ...extra].join('\n').slice(0, 4000),
     },
   });
   if (error || !data) return fail(503, 'Lead storage unavailable; retry delivery');
+  await dispatchLeadNotifications(String(data));
   return NextResponse.json({ received: true }, { headers: CRM_PRIVATE_HEADERS });
 }
